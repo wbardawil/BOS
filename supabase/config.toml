@@ -357,6 +357,11 @@ enabled = false
 # user_pool_region = "us-east-1"
 
 # Use Clerk as a third-party provider alongside Supabase Auth.
+# BDS LAW #1: this is the production auth path — Clerk JWTs validated by Supabase,
+# RLS policies read auth.jwt()->>'sub' (see packages/db/README.md "Clerk wiring").
+# To activate: create the Clerk app, run https://clerk.com/setup/supabase, set the
+# domain below AND the same value in the hosted project's Auth settings, then run
+# `pnpm test:rls` with CLERK-mode env vars to verify the live handshake.
 [auth.third_party.clerk]
 enabled = false
 # Obtain from https://clerk.com/setup/supabase

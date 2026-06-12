@@ -8,9 +8,15 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:rls": "playwright test"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "jose": "^6.0.10",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   }

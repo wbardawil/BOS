@@ -32,3 +32,27 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  # Architecture law #1: the adversarial RLS suite must pass before any merge.
+  rls:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Start local Supabase (applies migrations)
+        run: pnpm exec supabase start -x studio,imgproxy,mailpit,realtime,storage-api,edge-runtime,logflare,vector
+
+      - name: Adversarial RLS suite
+        run: pnpm test:rls

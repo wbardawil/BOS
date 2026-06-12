@@ -10,7 +10,7 @@
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "test:rls": "echo \"RLS suite arrives with Prompt 1 (packages/db + Playwright)\" && exit 0",
+    "test:rls": "pnpm --filter @bos/db test:rls",
     "db:migrate": "supabase migration up",
     "db:reset": "supabase db reset"
   },
