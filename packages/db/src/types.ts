@@ -10,7 +10,7 @@ export type MembershipRole =
   | "contributor"
   | "viewer";
 
-export interface OrganizationRow {
+export type OrganizationRow = {
   id: string;
   name: string;
   kind: OrgKind;
@@ -18,14 +18,14 @@ export interface OrganizationRow {
   created_at: string;
 }
 
-export interface MembershipRow {
+export type MembershipRow = {
   org_id: string;
   user_id: string;
   role: MembershipRole;
   created_at: string;
 }
 
-export interface WorkspaceRow {
+export type WorkspaceRow = {
   id: string;
   org_id: string;
   client_name: string;
@@ -33,7 +33,22 @@ export interface WorkspaceRow {
   archived_at: string | null;
 }
 
-export interface Database {
+export type UsageLedgerStatus = "success" | "error";
+
+export type UsageLedgerRow = {
+  id: string;
+  org_id: string;
+  workspace_id: string | null;
+  action: string;
+  model: string;
+  tokens_in: number;
+  tokens_out: number;
+  cost_cents: number;
+  status: UsageLedgerStatus;
+  created_at: string;
+}
+
+export type Database = {
   public: {
     Tables: {
       organizations: {
@@ -85,6 +100,34 @@ export interface Database {
           client_name?: string;
           created_at?: string;
           archived_at?: string | null;
+        };
+        Relationships: [];
+      };
+      usage_ledger: {
+        Row: UsageLedgerRow;
+        Insert: {
+          id?: string;
+          org_id: string;
+          workspace_id?: string | null;
+          action: string;
+          model: string;
+          tokens_in?: number;
+          tokens_out?: number;
+          cost_cents?: number;
+          status?: UsageLedgerStatus;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          org_id?: string;
+          workspace_id?: string | null;
+          action?: string;
+          model?: string;
+          tokens_in?: number;
+          tokens_out?: number;
+          cost_cents?: number;
+          status?: UsageLedgerStatus;
+          created_at?: string;
         };
         Relationships: [];
       };

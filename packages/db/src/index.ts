@@ -17,6 +17,8 @@ export type {
   MembershipRow,
   OrganizationRow,
   OrgKind,
+  UsageLedgerRow,
+  UsageLedgerStatus,
   WorkspaceRow,
 } from "./types";
 

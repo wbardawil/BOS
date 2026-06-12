@@ -8,9 +8,17 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "demo": "tsx scripts/demo.ts"
+  },
+  "dependencies": {
+    "@bos/db": "workspace:*",
+    "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "langfuse": "^3.38.0",
+    "tsx": "^4.20.0",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   }
