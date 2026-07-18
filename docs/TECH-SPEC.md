@@ -1,7 +1,7 @@
 # TECH-SPEC v1.0 — Digital Chief of Staff Platform
 ## CTO / Senior Architect / Product Owner technical specification
 
-**Date:** 2026-06-11 · **Companion docs:** `SPEC.md` v0.8 (product) · `KICKOFF-PROMPTS.md` (Claude Code execution)
+**Date:** 2026-06-11 · **Companion docs:** `SPEC.md` v0.8 (product) · `SPEC-ADDENDUM.md` v0.9 (loop, new schema §3, screens) · `KICKOFF-PROMPTS.md` (Claude Code execution)
 **Brand:** **BDS — Business Design Shop** (decided 2026-06-11) · **Repo:** `github.com/wbardawil/BOS` · Packages: `@bos/*`
 **Naming note:** the legacy repo `bds-OS` (P&L maturity backend) is unrelated to the BDS brand and gets archived after engine extraction — which conveniently frees the name. "DECIDE" stays as the M4 method name.
 

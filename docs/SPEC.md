@@ -2,6 +2,7 @@
 ## A Chief of Staff's hands with a CSIO's brain: strategy, operating model, technology decisions, and execution alignment in one workspace
 
 **Version:** 0.8 · 2026-06-11 · supersedes v0.1–v0.7 (consolidated rewrite — one document, one idea)
+**⚠ Extended by `SPEC-ADDENDUM.md` (v0.9, 2026-07-17):** AI-OS vision, the connect→audit→prioritize loop, org-based pricing, coach-led GTM, hypotheses H1–H8, new screens + schema. Read both.
 **Owner:** Wadi Bardawil
 **North-star outcome:** $30M+ founder net worth at Year 5 via strategic exit. Bootstrapped; ≤30% dilution only as late accelerant. Stretch: $12M revenue Years 3–5 (§9.1).
 **Founder role:** Customer #1 from week 1, closer, product designer, CEO.
