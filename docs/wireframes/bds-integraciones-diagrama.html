@@ -1,0 +1,367 @@
+<title>BDS · Información viva — arquitectura de integración</title>
+<style>
+  :root {
+    --bg: #F2F5F4; --surface: #FFFFFF; --surface-2: #E9EEEC;
+    --ink: #1A2421; --ink-2: #45534E; --muted: #6C7A75; --line: #D8E0DD;
+    --accent: #0E6E63; --accent-ink: #FFFFFF; --accent-soft: #E0EEEB;
+    --good: #2E7D46; --good-soft: #E3F0E7;
+    --warn: #8A6410; --warn-soft: #F5ECD8;
+    --crit: #A93327; --crit-soft: #F7E4E1;
+    --shadow: 0 1px 3px rgba(26,36,33,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0F1513; --surface: #171F1C; --surface-2: #1F2925;
+      --ink: #E6ECEA; --ink-2: #B7C4BF; --muted: #85948E; --line: #2A3631;
+      --accent: #3CA795; --accent-ink: #0F1513; --accent-soft: #1B322D;
+      --good: #66B37E; --good-soft: #1C2E22; --warn: #D0A24A; --warn-soft: #322A16;
+      --crit: #DD7A6D; --crit-soft: #38201C; --shadow: 0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F1513; --surface: #171F1C; --surface-2: #1F2925;
+    --ink: #E6ECEA; --ink-2: #B7C4BF; --muted: #85948E; --line: #2A3631;
+    --accent: #3CA795; --accent-ink: #0F1513; --accent-soft: #1B322D;
+    --good: #66B37E; --good-soft: #1C2E22; --warn: #D0A24A; --warn-soft: #322A16;
+    --crit: #DD7A6D; --crit-soft: #38201C; --shadow: 0 1px 3px rgba(0,0,0,.4);
+  }
+  :root[data-theme="light"] {
+    --bg: #F2F5F4; --surface: #FFFFFF; --surface-2: #E9EEEC;
+    --ink: #1A2421; --ink-2: #45534E; --muted: #6C7A75; --line: #D8E0DD;
+    --accent: #0E6E63; --accent-ink: #FFFFFF; --accent-soft: #E0EEEB;
+    --good: #2E7D46; --good-soft: #E3F0E7; --warn: #8A6410; --warn-soft: #F5ECD8;
+    --crit: #A93327; --crit-soft: #F7E4E1; --shadow: 0 1px 3px rgba(26,36,33,.08);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { max-width: 980px; margin: 0 auto; padding: 36px 24px 80px; }
+
+  header.hero { margin-bottom: 30px; }
+  .wordmark { font-family: Georgia, "Iowan Old Style", serif; font-size: 15px; letter-spacing: .5px; color: var(--muted); }
+  h1 { font-family: Georgia, "Iowan Old Style", serif; font-size: 30px; margin: 8px 0 6px; font-weight: 600; text-wrap: balance; line-height: 1.25; }
+  .lede { font-size: 16px; color: var(--ink-2); max-width: 62ch; margin: 0; }
+  .theme-toggle {
+    float: right; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+    border-radius: 7px; padding: 5px 12px; font: inherit; font-size: 13px; cursor: pointer;
+  }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  h2.sec { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 40px 0 14px; font-weight: 700; }
+
+  /* ── el diagrama por capas ── */
+  .diagram { display: flex; flex-direction: column; align-items: stretch; }
+  .layer {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px 18px 18px; box-shadow: var(--shadow); position: relative;
+  }
+  .layer-tag {
+    position: absolute; top: -9px; left: 16px; font-size: 10.5px; font-weight: 700;
+    letter-spacing: .8px; text-transform: uppercase; background: var(--accent); color: var(--accent-ink);
+    border-radius: 5px; padding: 2px 9px;
+  }
+  .layer-tag.neutral { background: var(--surface-2); color: var(--ink-2); }
+  .layer h3 { margin: 6px 0 3px; font-size: 16px; }
+  .layer .desc { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+  .boxes { display: flex; gap: 10px; flex-wrap: wrap; }
+  .box {
+    flex: 1; min-width: 130px; border: 1px solid var(--line); border-radius: 9px;
+    padding: 10px 12px; background: var(--bg); font-size: 13px;
+  }
+  .box b { display: block; font-size: 13.5px; margin-bottom: 2px; }
+  .box span { color: var(--muted); font-size: 12px; line-height: 1.4; display: block; }
+  .box.accent { background: var(--accent-soft); border-color: var(--accent); }
+  .box.dim b::after { content: " · solo lectura"; font-weight: 400; color: var(--muted); font-size: 11px; }
+
+  /* flechas entre capas */
+  .flow {
+    display: flex; justify-content: center; gap: 60px; padding: 4px 0;
+  }
+  .arrow { display: flex; flex-direction: column; align-items: center; min-width: 200px; }
+  .arrow svg { display: block; }
+  .arrow .albl {
+    font-size: 11.5px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line);
+    border-radius: 99px; padding: 2px 11px; margin: -32px 0 6px; position: relative; font-weight: 600;
+    white-space: nowrap;
+  }
+  .arrow .albl.up { color: var(--accent); border-color: var(--accent); }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 720px) { .split { grid-template-columns: 1fr; } .theme-toggle { float: none; margin-bottom: 10px; } }
+
+  .path {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px 18px; box-shadow: var(--shadow);
+  }
+  .path h3 { margin: 0 0 4px; font-size: 15.5px; }
+  .path .who { font-size: 12px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; margin-bottom: 8px; }
+  .path.sync .who { color: var(--accent); }
+  .path.live .who { color: var(--warn); }
+  ol.steps { margin: 8px 0 0; padding-left: 0; list-style: none; counter-reset: p; font-size: 13.5px; }
+  ol.steps li { counter-increment: p; display: flex; gap: 10px; padding: 6px 0; border-top: 1px solid var(--line); color: var(--ink-2); }
+  ol.steps li:first-child { border-top: 0; }
+  ol.steps li::before {
+    content: counter(p); flex-shrink: 0; width: 20px; height: 20px; border-radius: 99px;
+    background: var(--surface-2); color: var(--ink-2); font-size: 11.5px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  code { font: 12.5px ui-monospace, "Cascadia Mono", Consolas, monospace; background: var(--surface-2); border-radius: 4px; padding: 1px 6px; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+    border-radius: 99px; padding: 2.5px 10px; white-space: nowrap;
+  }
+  .chip::before { content: ""; width: 7px; height: 7px; border-radius: 99px; background: currentColor; }
+  .chip.good { color: var(--good); background: var(--good-soft); }
+  .chip.warn { color: var(--warn); background: var(--warn-soft); }
+  .chip.crit { color: var(--crit); background: var(--crit-soft); }
+  .chip.accent { color: var(--accent); background: var(--accent-soft); }
+
+  /* ejemplo vivo */
+  .example {
+    border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 10px;
+    background: var(--surface); padding: 16px 18px; box-shadow: var(--shadow);
+  }
+  .example .fn { font-size: 12px; color: var(--muted); font-family: ui-monospace, Consolas, monospace; margin-bottom: 8px; }
+  .ex-flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13.5px; }
+  .ex-node { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 7px 12px; }
+  .ex-node b { font-size: 13px; }
+  .ex-node small { display: block; color: var(--muted); font-size: 11.5px; }
+  .ex-arrow { color: var(--muted); font-size: 15px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); padding: 6px 10px; border-bottom: 1px solid var(--line); font-weight: 650; }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; box-shadow: var(--shadow); }
+
+  .laws { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 720px) { .laws { grid-template-columns: 1fr; } }
+  .law { border: 1px solid var(--line); border-radius: 9px; padding: 11px 14px; background: var(--surface); font-size: 13.5px; color: var(--ink-2); }
+  .law b { color: var(--ink); }
+
+  .fict { font-size: 11.5px; color: var(--muted); margin-top: 44px; border-top: 1px solid var(--line); padding-top: 10px; }
+</style>
+
+<main>
+  <header class="hero">
+    <button class="theme-toggle" id="theme-toggle" aria-label="Cambiar tema">◐ Tema</button>
+    <div class="wordmark">BDS · Digital Chief of Staff</div>
+    <h1>Información viva: cómo el tablero se conecta al ERP, CRM y las herramientas del cliente</h1>
+    <p class="lede">El principio: <b>BOS no reemplaza los sistemas donde la empresa opera — los lee, los interpreta con agentes que cargan el framework, y solo escribe de vuelta con aprobación humana.</b> Odoo sigue siendo el ERP; HubSpot sigue siendo el CRM. BOS es la capa que responde "¿y esto qué significa para la estrategia?" — y la respuesta la dan agentes de vértice, no una gráfica.</p>
+  </header>
+
+  <h2 class="sec">El diagrama — cinco capas, dos sentidos</h2>
+  <div class="diagram">
+
+    <div class="layer">
+      <span class="layer-tag neutral">Capa 1 · Sistemas del cliente</span>
+      <h3>Donde la empresa ya opera (no se toca, no se migra)</h3>
+      <p class="desc">Cada workspace conecta los suyos. Los datos nunca se copian en masa — se leen los indicadores pactados.</p>
+      <div class="boxes">
+        <div class="box"><b>Odoo</b><span>ERP · ventas, margen, inventario, OTIF, cuentas por cobrar</span></div>
+        <div class="box"><b>GoHighLevel</b><span>CRM · pipeline, conversión, citas, campañas</span></div>
+        <div class="box"><b>HubSpot</b><span>CRM · deals, NPS, actividad comercial</span></div>
+        <div class="box"><b>Fireflies</b><span>Reuniones · transcripciones y resúmenes</span></div>
+      </div>
+      <div class="boxes" style="margin-top:10px">
+        <div class="box dim"><b>Jira / Asana / ClickUp / Monday</b><span>Avance de proyectos — read-sync, jamás gestión (Ley: PM fuera de alcance)</span></div>
+        <div class="box dim"><b>Notion</b><span>Docs y wiki interna — contexto para los agentes</span></div>
+        <div class="box"><b>Google Workspace</b><span>Calendar, Gmail, Drive · agenda real del equipo, docs de trabajo</span></div>
+        <div class="box"><b>Microsoft 365</b><span>Outlook, Teams, Excel · el otro mundo productivo — misma cobertura</span></div>
+      </div>
+      <div class="boxes" style="margin-top:10px">
+        <div class="box accent"><b>Fuente interna · Assessments</b><span>Diagnósticos CDIO-128 / BDS-82 / packs custom respondidos por el equipo de liderazgo — la línea base de madurez que los datos vivos después confirman o desmienten</span></div>
+        <div class="box accent"><b>Fuente interna · El equipo de liderazgo</b><span>Check-ins de delegaciones, explicaciones de variación, respuestas al coach — las personas también son fuente de datos, no solo lectores</span></div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="arrow">
+        <svg width="20" height="44" viewBox="0 0 20 44" aria-hidden="true"><line x1="10" y1="0" x2="10" y2="34" stroke="var(--accent)" stroke-width="2"/><path d="M4 32 L10 42 L16 32" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/></svg>
+        <span class="albl up">lectura: APIs + MCP</span>
+      </div>
+      <div class="arrow">
+        <svg width="20" height="44" viewBox="0 0 20 44" aria-hidden="true"><line x1="10" y1="44" x2="10" y2="10" stroke="var(--muted)" stroke-width="2" stroke-dasharray="4 3"/><path d="M4 12 L10 2 L16 12" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linejoin="round"/></svg>
+        <span class="albl">escritura: solo con aprobación</span>
+      </div>
+    </div>
+
+    <div class="layer">
+      <span class="layer-tag">Capa 2 · @bos/connect — la aduana</span>
+      <h3>Conectores por proveedor, credenciales por workspace</h3>
+      <p class="desc">Un conector = un proveedor. Credenciales cifradas, scoped al workspace (RLS igual que todo). Dos caminos de lectura, un solo camino de escritura.</p>
+      <div class="boxes">
+        <div class="box accent"><b>Camino A · Sync programado</b><span>Jobs Inngest (cada hora / diario) jalan los KPIs pactados → <code>metric_points</code>. El tablero siempre está vivo sin que nadie pregunte.</span></div>
+        <div class="box accent"><b>Camino B · Consulta on-demand (MCP)</b><span>El agente CoS usa los conectores como tools MCP cuando razona: "¿cómo cerró el pipeline esta semana?" — pregunta directo, no espera al sync.</span></div>
+        <div class="box"><b>Escritura de vuelta</b><span>Crear nota en CRM, agendar cita, comentar en el PM del cliente — SIEMPRE pasa por <code>agent_runs.awaiting_approval</code>. Sin excepción.</span></div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="arrow">
+        <svg width="20" height="44" viewBox="0 0 20 44" aria-hidden="true"><line x1="10" y1="0" x2="10" y2="34" stroke="var(--accent)" stroke-width="2"/><path d="M4 32 L10 42 L16 32" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/></svg>
+        <span class="albl up">valores con timestamp y fuente</span>
+      </div>
+    </div>
+
+    <div class="layer">
+      <span class="layer-tag">Capa 3 · BOS — system of record estratégico</span>
+      <h3>Aquí los números se vuelven significado</h3>
+      <p class="desc">Postgres con RLS. Cada <code>metric_point</code> llega ligado a una capacidad, un supuesto o una iniciativa — por eso un dato que cae dispara estrategia, no solo una alerta.</p>
+      <div class="boxes">
+        <div class="box"><b>metric_points</b><span>KPIs vivos, con procedencia: <code>source: 'odoo'|'hubspot'|'ghl'|'manual'</code></span></div>
+        <div class="box"><b>Challenge Loop</b><span>3 semanas de OTIF a la baja → challenge automático nivel 2, con datos reales, no opiniones</span></div>
+        <div class="box"><b>Delegaciones</b><span>El KPI auto-alimentado cambia el check-in: ya no "repórtame el número" sino "el número ya llegó — explícame la variación"</span></div>
+        <div class="box"><b>Coherencia</b><span>Se recalcula con cada sync — el score del lunes refleja la realidad del viernes</span></div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="arrow">
+        <svg width="20" height="44" viewBox="0 0 20 44" aria-hidden="true"><line x1="10" y1="0" x2="10" y2="34" stroke="var(--accent)" stroke-width="2"/><path d="M4 32 L10 42 L16 32" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/></svg>
+        <span class="albl up">datos crudos → lectura por framework</span>
+      </div>
+    </div>
+
+    <div class="layer">
+      <span class="layer-tag">Capa 4 · Agentes de sentido — un agente por vértice</span>
+      <h3>Los datos no se muestran: se interpretan dentro del framework</h3>
+      <p class="desc">Cada vértice tiene un agente que lee los datos vivos con SU metodología (los paquetes de IP ya extraídos) y produce juicios, no gráficas. El CoS orquesta a los tres. Routing por ley: Haiku para lo rutinario, Sonnet para razonar.</p>
+      <div class="boxes">
+        <div class="box accent"><b>Agente de Estrategia</b><span>Framework: <code>@bos/p2w</code> · lee pipeline, conversión y mercado → estatus de cada supuesto WWHTBT: sostenido / en prueba / roto. "El supuesto de sobreprecio 12% está roto — la evidencia dice 5–7%."</span></div>
+        <div class="box accent"><b>Agente de Modelo Operativo</b><span>Framework: <code>@bos/methodology</code> + <code>@bos/scoring</code> · lee KPIs de Odoo y check-ins → mueve madurez de capacidades, detecta delegaciones que fallan, propone re-diagnóstico. "Cadena de suministro retrocedió: 2.8 → 2.5."</span></div>
+        <div class="box accent"><b>Agente de Portafolio</b><span>Framework: engines bds-OS (OPI, lifecycle, focus) · lee avance del PM y finanzas → recalcula OPI, marca riesgo y huérfanas. "Ruteo 48h cayó a OPI 41 — es tu iniciativa más ligada al choice principal."</span></div>
+        <div class="box"><b>CoS orquestador</b><span>Sintetiza a los tres en la agenda, la bandeja y el Challenge Loop — la voz única que ve el triángulo completo. Corre en Hermes o Claude Code (mismas skills).</span></div>
+      </div>
+      <div class="boxes" style="margin-top:10px">
+        <div class="box"><b>Coach por empleado</b><span>Cada persona con algo delegado (KPI, pregunta, iniciativa) tiene su coach: conoce SUS números vivos, su historial de check-ins y su rol en el portafolio. Coachea para mejorar el número y destrabar la iniciativa — nunca gestiona sus tareas. Escala blockers al CoS. "Jorge, tu OTIF lleva 3 semanas cayendo por flota: ¿ya cotizaste el rework de rutas con la flota actual? Es el punto 1 del lunes — llega con una propuesta."</span></div>
+      </div>
+      <div style="border-top:1px dashed var(--line); margin-top:14px; padding-top:12px">
+        <h3 style="font-size:14px; margin:0 0 3px">La biblioteca que cargan TODOS los agentes — el IP que ya existe</h3>
+        <p class="desc">Ningún agente improvisa criterio: cada juicio sale de la metodología ratificada, extraída y testeada. Esto es lo que un "strategy agent" genérico de Microsoft no tiene.</p>
+        <div class="boxes">
+          <div class="box"><b>Banco diagnóstico</b><span><code>@bos/methodology</code> · 128 preguntas citadas (COBIT, NIST, ITIL, DORA) + 82 prácticas P&L — la vara con la que se mide cada capacidad y se decide qué delegar</span></div>
+          <div class="box"><b>Play to Win completo</b><span><code>@bos/p2w</code> · cascada de 5 cajas, 7 categorías WWHTBT, possibilities rivales, cálculo de confianza — el lente del Agente de Estrategia</span></div>
+          <div class="box"><b>Ciclo de vida corporativo</b><span>Engine lifecycle (bds-OS) · la etapa de la empresa pondera todo: qué capacidades urgen, qué OPI sube, qué le exige el coach a cada quien — una empresa de $6M no se coachea como una de $40M</span></div>
+          <div class="box"><b>Corpus de apps (DECIDE)</b><span>Información machine-readable de ERPs, CRMs y herramientas · doble uso: decidir bien la próxima compra de tecnología (M4) y recomendar qué conectar a BOS — "usas Odoo: conéctalo y estos 6 KPIs se llenan solos"</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="arrow">
+        <svg width="20" height="44" viewBox="0 0 20 44" aria-hidden="true"><line x1="10" y1="0" x2="10" y2="34" stroke="var(--accent)" stroke-width="2"/><path d="M4 32 L10 42 L16 32" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/></svg>
+        <span class="albl up">juicios sintetizados</span>
+      </div>
+    </div>
+
+    <div class="layer">
+      <span class="layer-tag">Capa 5 · Superficies</span>
+      <h3>Donde lo vive cada quien — CEO, liderazgo y cada empleado</h3>
+      <div class="boxes">
+        <div class="box"><b>Cockpit del CEO</b><span>El tablero del dummy — ahora con datos que se mueven solos</span></div>
+        <div class="box"><b>Portal del equipo de liderazgo</b><span>Cada ejecutivo (portal seat) ve SUS delegaciones, SUS números vivos y a SU coach. Contribuye check-ins y evidencia — es actor, no espectador</span></div>
+        <div class="box"><b>Coach del empleado</b><span>Chat + nudges donde la persona ya trabaja (correo / Teams / portal) — la superficie del coach de la Capa 4</span></div>
+        <div class="box"><b>Agente CoS</b><span>Hermes o Claude Code, mismas skills — prepara sesiones, chasea, propone</span></div>
+        <div class="box"><b>Vault Obsidian</b><span>Readouts publicados en Markdown donde el CEO piensa</span></div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sec">Los dos caminos, paso a paso</h2>
+  <div class="split">
+    <div class="path sync">
+      <div class="who">Camino A — sync programado (el tablero vivo)</div>
+      <h3>OTIF desde Odoo, cada mañana a las 6:00</h3>
+      <ol class="steps">
+        <li>Job Inngest corre con las credenciales del workspace (RLS).</li>
+        <li>Consulta a Odoo: entregas completas y a tiempo de ayer.</li>
+        <li>Escribe <code>metric_point</code> (valor 87%, fuente odoo, timestamp).</li>
+        <li>El engine compara contra el objetivo del supuesto ligado (≥95%).</li>
+        <li>Tercera semana a la baja → Challenge Loop crea challenge nivel 2.</li>
+        <li>El challenge aparece en tu bandeja de aprobación y en la agenda del lunes.</li>
+      </ol>
+    </div>
+    <div class="path live">
+      <div class="who">Camino B — consulta on-demand vía MCP (el agente razona)</div>
+      <h3>"¿Cómo va el pipeline contra el supuesto de demanda?"</h3>
+      <ol class="steps">
+        <li>Le preguntas al advisor (o el agente lo necesita para preparar la sesión).</li>
+        <li>El agente invoca el tool MCP del CRM: deals abiertos, conversión, velocidad.</li>
+        <li>Cruza contra el supuesto: "cerramos 4 clientes nuevos/mes con el canal directo".</li>
+        <li>Responde con el dato Y el significado: "vas en 2.7/mes — el supuesto está en zona de prueba, no roto. Te propongo revisarlo con 4 semanas más de datos."</li>
+        <li>Toda la llamada pasa por <code>@bos/ai</code>: metering, cache, cap por org.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h2 class="sec">Ejemplo de punta a punta — con los datos ficticios del dummy</h2>
+  <div class="example">
+    <div class="fn">molinos-delta (ficticio) · lunes 6:00–9:00 am</div>
+    <div class="ex-flow">
+      <span class="ex-node"><b>Odoo</b><small>OTIF cierra en 87%</small></span>
+      <span class="ex-arrow">→</span>
+      <span class="ex-node"><b>Sync 6:00</b><small>metric_point registrado</small></span>
+      <span class="ex-arrow">→</span>
+      <span class="ex-node"><b>Challenge Loop</b><small>3.ª semana a la baja → challenge N2</small></span>
+      <span class="ex-arrow">→</span>
+      <span class="ex-node"><b>Agente CoS</b><small>lo pone como punto 1 de la agenda</small></span>
+      <span class="ex-arrow">→</span>
+      <span class="ex-node"><b>Tu bandeja</b><small>apruebas a las 8:50</small></span>
+      <span class="ex-arrow">→</span>
+      <span class="ex-node"><b>Sesión 9:00</b><small>se discute con datos, se decide</small></span>
+    </div>
+    <p style="font-size:13.5px;color:var(--ink-2);margin:12px 0 0">Nadie capturó nada a mano. Jorge (Operaciones) no "reportó" el OTIF — el sistema lo trajo, y su check-in semanal se convirtió en explicar la variación: "es disponibilidad de flota, no las rutas". Esa explicación es la evidencia que alimenta el challenge.</p>
+  </div>
+
+  <h2 class="sec">Qué se sincroniza de cada herramienta (v1 pactada, no espejo completo)</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Fuente</th><th>Se lee</th><th>Alimenta</th><th>Escritura de vuelta (con aprobación)</th></tr></thead>
+    <tbody>
+      <tr><td><b>Odoo</b> (ERP)</td><td>Ventas, margen por línea, OTIF, inventario crítico, CxC vencida</td><td>KPIs del modelo operativo · supuestos financieros</td><td>Ninguna en v1</td></tr>
+      <tr><td><b>GoHighLevel</b> (CRM)</td><td>Pipeline, conversión por etapa, citas agendadas, respuesta de campañas</td><td>Supuestos de demanda · iniciativas comerciales</td><td>Nota en el contacto, tarea de seguimiento</td></tr>
+      <tr><td><b>HubSpot</b> (CRM)</td><td>Deals, velocidad de cierre, NPS, actividad por vendedor</td><td>Supuestos de demanda · KPI delegados a Comercial</td><td>Nota en el deal</td></tr>
+      <tr><td><b>Fireflies</b></td><td>Transcripciones de reuniones de dirección</td><td>Minutas · decisiones candidatas · challenges</td><td>—</td></tr>
+      <tr><td><b>Jira / Asana / ClickUp</b></td><td>% avance e hitos de las iniciativas ligadas — <b>solo lectura, siempre</b></td><td>Estado estratégico de iniciativas (OPI)</td><td>Comentario de seguimiento (v2)</td></tr>
+      <tr><td><b>Notion</b></td><td>Docs y wiki ligados a iniciativas y capacidades</td><td>Contexto RAG para los agentes de vértice y coaches</td><td>Publicar readouts a una página (v2)</td></tr>
+      <tr><td><b>Google Workspace</b></td><td>Calendar (cadencia real), Drive (docs de trabajo)</td><td>Agenda de sesiones · evidencia de supuestos</td><td>Crear evento de sesión, borrador de correo (nudge del coach)</td></tr>
+      <tr><td><b>Microsoft 365</b></td><td>Outlook/Teams (calendario, canales), Excel (reportes que ya existen)</td><td>Lo mismo que Google — paridad entre los dos mundos</td><td>Mensaje de coach en Teams, borrador en Outlook</td></tr>
+      <tr><td><b>Assessments (interno)</b></td><td>Respuestas del equipo de liderazgo a CDIO-128 / BDS-82 / packs custom</td><td>Línea base de madurez · qué se delega y a quién</td><td>— (nace en BOS)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 class="sec">Las leyes que esta capa NO rompe</h2>
+  <div class="laws">
+    <div class="law"><b>RLS hasta las credenciales.</b> La conexión de un workspace vive cifrada y scoped a su org. Un consultor con 6 clientes tiene 6 juegos de credenciales aislados en Postgres, no un cajón compartido.</div>
+    <div class="law"><b>PM fuera de alcance (Ley 7).</b> Leer % de avance de Asana ≠ gestionar tareas. BOS nunca muestra un Gantt ni crea tickets. La frontera ES la categoría.</div>
+    <div class="law"><b>Outbound solo con aprobación (Ley 5).</b> Escribir una nota en el CRM del cliente es acción externa: pasa por la bandeja igual que un correo.</div>
+    <div class="law"><b>Todo LLM por @bos/ai (Ley 3).</b> Las consultas MCP del agente se meteran, cachean y capean igual que todo. Un sync no usa LLM: es dato puro, costo cero de tokens.</div>
+  </div>
+
+  <h2 class="sec">Orden de construcción — dogfood primero, producto después</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Paso</th><th>Qué se conecta</th><th>Por qué en este orden</th><th>Gate</th></tr></thead>
+    <tbody>
+      <tr><td><b>1</b> <span class="chip accent">tu empresa</span></td><td>Fireflies → cadencia</td><td>Ya tienes el MCP conectado; cero fricción; valor inmediato en tus sesiones reales</td><td>Una reunión tuya procesada de punta a punta</td></tr>
+      <tr><td><b>2</b> <span class="chip accent">tu empresa</span></td><td>Tu CRM real → supuestos de demanda</td><td>El primer KPI auto-alimentado con datos tuyos de verdad</td><td>Un supuesto tuyo probándose solo con datos del CRM, 4 semanas</td></tr>
+      <tr><td><b>3</b> <span class="chip accent">tu empresa</span></td><td>Contabilidad/ERP (lo que uses) → finanzas</td><td>Cierra el triángulo con números financieros vivos</td><td>Coherencia y challenges corriendo 30 días sin captura manual</td></tr>
+      <tr><td><b>4</b> <span class="chip warn">clientes dogfood</span></td><td>Odoo + GHL/HubSpot en 1–2 engagements reales</td><td>Los conectores se endurecen con datos ajenos (auth, RLS, rarezas de cada instancia)</td><td>Un cliente ve su tablero vivo en una sesión y pregunta "¿cómo lo contrato?"</td></tr>
+      <tr><td><b>5</b> <span class="chip good">producto</span></td><td>Galería de conectores en onboarding</td><td>Solo entonces se generaliza: lo que sobrevivió a 3 empresas reales se vende</td><td>Un founding member conecta su stack sin tu ayuda</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="fict">Diagrama de arquitectura · fase de spec — nada de esto está construido aún. Todos los datos y empresas mencionados ("Molinos Delta") son ficticios. BDS — Business Design Shop.</div>
+</main>
+
+<script>
+  const root = document.documentElement;
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    root.dataset.theme = cur === 'dark' ? 'light' : 'dark';
+  });
+</script>

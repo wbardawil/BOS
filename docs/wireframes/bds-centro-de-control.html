@@ -1,0 +1,593 @@
+<title>BDS · Centro de Control — wireframe UX/UI</title>
+<style>
+  :root {
+    --wb-gunmetal:#222831; --wb-carbon:#1A1E25; --wb-panel:#2C333E;
+    --wb-accent:#FD4002; --wb-accent-700:#D63601;
+    --wb-white:#FFFFFF; --wb-body:#B8C0CC; --wb-body-soft:#C2C9D4;
+    --wb-gray:#98A0AD; --wb-muted:#6B7480; --wb-line:rgba(255,255,255,.09);
+    --good:#66B37E; --good-soft:rgba(102,179,126,.13);
+    --warn:#D0A24A; --warn-soft:rgba(208,162,74,.13);
+    --crit:#DD7A6D; --crit-soft:rgba(221,122,109,.13);
+    --font-head:"Archivo",Inter,system-ui,sans-serif;
+    --font-body:"Manrope",Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--wb-gunmetal); color:var(--wb-body); font:14px/1.5 var(--font-body); -webkit-font-smoothing:antialiased; }
+  /* tema claro — variación #F4F5F7 del brand system */
+  body.light { --wb-gunmetal:#F4F5F7; --wb-carbon:#FFFFFF; --wb-panel:#FFFFFF;
+    --wb-white:#1A1E25; --wb-body:#4A5560; --wb-body-soft:#3E4650; --wb-gray:#6B7480;
+    --wb-muted:#98A0AD; --wb-line:rgba(26,30,37,.11);
+    --good:#2E7D46; --good-soft:rgba(46,125,70,.12); --warn:#8A6410; --warn-soft:rgba(176,124,16,.13); --crit:#A93327; --crit-soft:rgba(169,51,39,.12); }
+  body.light main::after { opacity:.05; color:#222831; }
+  /* texto sobre naranja siempre blanco, en ambos temas */
+  .btn.p, .roles button.on, .tile, .nav .cnt, .fab, .msg.u, .fin { color:#FFFFFF !important; }
+  .layout { display:flex; min-height:100vh; }
+
+  nav.side { width:230px; flex-shrink:0; background:var(--wb-carbon); border-right:1px solid var(--wb-line);
+    padding:20px 12px; display:flex; flex-direction:column; gap:2px; position:sticky; top:0; height:100vh; }
+  .wordmark { display:flex; align-items:center; gap:9px; padding:2px 10px 4px; }
+  .tile { width:30px; height:30px; border-radius:7px; background:var(--wb-accent); color:var(--wb-white); font:900 17px/30px var(--font-head); text-align:center; flex-shrink:0; }
+  .wordmark b { font:800 15px var(--font-head); color:var(--wb-white); letter-spacing:.5px; }
+  .wordmark small { display:block; font:700 9px var(--font-body); color:var(--wb-muted); letter-spacing:1.5px; text-transform:uppercase; }
+  .ws { margin:14px 6px 16px; padding:10px 12px; border:1px solid var(--wb-line); border-radius:10px; background:var(--wb-gunmetal); font-size:12px; }
+  .ws b { display:block; color:var(--wb-white); font-size:12.5px; }
+  .ws span { color:var(--wb-muted); font-size:11px; }
+  nav.side button.nav { display:flex; align-items:center; gap:9px; width:100%; text-align:left; padding:9px 12px;
+    border:0; border-radius:8px; background:none; color:var(--wb-gray); font:600 13.5px var(--font-body); cursor:pointer; }
+  nav.side button.nav:hover { background:rgba(255,255,255,.05); color:var(--wb-body-soft); }
+  nav.side button.nav.active { background:rgba(253,64,2,.13); color:var(--wb-accent); font-weight:800; }
+  nav.side button.nav:focus-visible, .roles button:focus-visible { outline:2px solid var(--wb-accent); outline-offset:2px; }
+  .nav .cnt { margin-left:auto; background:var(--wb-accent); color:var(--wb-white); border-radius:99px; font:800 10.5px/18px var(--font-head); min-width:18px; text-align:center; padding:0 5px; }
+  .navgroup { font:800 9.5px var(--font-body); letter-spacing:1.8px; text-transform:uppercase; color:var(--wb-muted); padding:12px 12px 4px; cursor:pointer; user-select:none; display:flex; align-items:center; }
+  .navgroup::after { content:"▾"; margin-left:auto; font-size:9px; transition:transform .2s; }
+  .navgroup.closed::after { transform:rotate(-90deg); }
+  .navgroup:first-of-type { padding-top:0; }
+  nav.side button.nav.hidden { display:none; }
+  nav.side button.nav.sub { padding:6px 12px 6px 22px; font-size:12.5px; }
+  nav.side { overflow-y:auto; }
+  .side-foot { margin-top:auto; padding:10px 12px; font-size:10.5px; color:var(--wb-muted); border-top:1px solid var(--wb-line); }
+  .dot { display:inline-block; width:7px; height:7px; border-radius:99px; background:var(--good); margin-right:5px; }
+
+  main { flex:1; padding:24px 30px 70px; max-width:1200px; position:relative; }
+  main::after { content:"W"; position:fixed; right:-30px; bottom:-80px; font:900 280px/1 var(--font-head); color:var(--wb-white); opacity:.04; pointer-events:none; }
+  header.top { display:flex; align-items:center; gap:14px; margin-bottom:20px; flex-wrap:wrap; }
+  .eyebrow { color:var(--wb-accent); font:700 11px var(--font-body); letter-spacing:2px; text-transform:uppercase; display:block; margin-bottom:3px; }
+  header.top h1 { font:800 22px var(--font-head); color:var(--wb-white); margin:0; letter-spacing:-.4px; }
+  .roles { margin-left:auto; display:flex; gap:0; border:1px solid var(--wb-line); border-radius:10px; overflow:hidden; }
+  .roles button { border:0; background:var(--wb-carbon); color:var(--wb-gray); font:700 12px var(--font-body); padding:8px 14px; cursor:pointer; }
+  .roles button.on { background:var(--wb-accent); color:var(--wb-white); }
+
+  section.view { display:none; }
+  section.view.active { display:block; }
+  .grid { display:grid; gap:13px; }
+  .c2 { grid-template-columns:1fr 1fr; } .c3 { grid-template-columns:repeat(3,1fr); } .c4 { grid-template-columns:repeat(4,1fr); }
+  @media (max-width:1020px){ .c4{grid-template-columns:1fr 1fr;} .c3,.c2{grid-template-columns:1fr;} }
+  @media (max-width:820px){ .layout{flex-direction:column;} nav.side{width:100%;height:auto;position:static;flex-direction:row;overflow-x:auto;align-items:center;} .ws,.side-foot{display:none;} main{padding:16px 14px 60px;} }
+
+  .card { background:var(--wb-panel); border:1px solid var(--wb-line); border-radius:16px; padding:15px 17px; }
+  .card h2 { font:700 10.5px var(--font-body); text-transform:uppercase; letter-spacing:1.6px; color:var(--wb-gray); margin:0 0 10px; }
+  .card h2 em { color:var(--wb-accent); font-style:normal; }
+  .card h3 { font:800 14.5px var(--font-head); color:var(--wb-white); margin:0 0 4px; letter-spacing:-.2px; }
+  .num { font:900 30px/1 var(--font-head); color:var(--wb-white); font-variant-numeric:tabular-nums; }
+  .num small { font:600 13px var(--font-body); color:var(--wb-muted); }
+  .num.hot { color:var(--wb-accent); }
+  .lbl { font-size:11.5px; color:var(--wb-gray); margin-top:3px; }
+
+  .chip { display:inline-flex; align-items:center; gap:5px; font:700 10.5px var(--font-body); border-radius:99px; padding:2px 9px; white-space:nowrap; }
+  .chip::before { content:""; width:6px; height:6px; border-radius:99px; background:currentColor; }
+  .chip.good{color:var(--good);background:var(--good-soft);} .chip.warn{color:var(--warn);background:var(--warn-soft);}
+  .chip.crit{color:var(--crit);background:var(--crit-soft);} .chip.acc{color:var(--wb-accent);background:rgba(253,64,2,.13);}
+  .chip.mut{color:var(--wb-gray);background:rgba(255,255,255,.07);}
+
+  .row { display:flex; gap:10px; align-items:baseline; padding:7px 0; border-top:1px solid var(--wb-line); font-size:13px; }
+  .row:first-of-type { border-top:0; }
+  .row .t { flex:1; color:var(--wb-body); min-width:0; }
+  .row .t b { color:var(--wb-white); font-weight:700; }
+  .row .m { color:var(--wb-muted); font-size:11.5px; white-space:nowrap; }
+  .kv b { font:800 14px var(--font-head); color:var(--wb-white); font-variant-numeric:tabular-nums; }
+  .var{font:700 11.5px var(--font-body);} .var.neg{color:var(--crit);} .var.pos{color:var(--good);} .var.mid{color:var(--warn);} .var.flat{color:var(--wb-muted);}
+
+  .btn { border:0; border-radius:9px; padding:7px 14px; font:700 12px var(--font-body); cursor:pointer; }
+  .btn.p { background:var(--wb-accent); color:var(--wb-white); } .btn.p:hover{background:var(--wb-accent-700);}
+  .btn.g { background:none; border:1.5px solid rgba(255,255,255,.2); color:var(--wb-body-soft); }
+
+  .track { position:relative; height:8px; background:rgba(255,255,255,.08); border-radius:4px; flex:1; }
+  .fill { position:absolute; inset:0 auto 0 0; background:var(--wb-gray); border-radius:4px; }
+  .fill.hot{background:var(--wb-accent);} .fill.ok{background:var(--good);}
+  .tick { position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--wb-white); }
+
+  .kanb { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  @media (max-width:1020px){ .kanb{grid-template-columns:1fr 1fr;} }
+  .kcol { background:var(--wb-carbon); border:1px solid var(--wb-line); border-radius:12px; padding:10px; }
+  .kcol h4 { font:700 10px var(--font-body); letter-spacing:1.4px; text-transform:uppercase; color:var(--wb-gray); margin:2px 4px 8px; }
+  .kcard { background:var(--wb-panel); border:1px solid var(--wb-line); border-radius:10px; padding:9px 11px; margin-bottom:8px; font-size:12px; }
+  .kcard b { display:block; color:var(--wb-white); font-size:12.5px; margin-bottom:2px; }
+  .kcard .m { color:var(--wb-muted); font-size:11px; }
+
+  .note { border-left:3px solid var(--wb-accent); padding:2px 0 2px 11px; font-size:12.5px; color:var(--wb-body-soft); font-style:italic; }
+  .spec { border:1px dashed rgba(253,64,2,.4); border-radius:10px; padding:8px 12px; font-size:11.5px; color:var(--wb-gray); margin-top:12px; }
+  .spec b { color:var(--wb-accent); font-size:10px; letter-spacing:1.2px; text-transform:uppercase; display:block; margin-bottom:2px; }
+  .mt { margin-top:13px; }
+  .fict { font-size:11px; color:var(--wb-muted); margin-top:28px; border-top:1px solid var(--wb-line); padding-top:9px; position:relative; z-index:1; }
+  #toast { position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:var(--wb-accent); color:#fff;
+    padding:10px 18px; border-radius:10px; font:700 13px var(--font-body); opacity:0; pointer-events:none; transition:opacity .25s; z-index:9; }
+  #toast.show { opacity:1; }
+
+  /* advisor chat */
+  .fab { position:fixed; right:26px; bottom:26px; width:54px; height:54px; border-radius:16px; border:0;
+    background:var(--wb-accent); color:#fff; font:900 22px var(--font-head); cursor:pointer;
+    box-shadow:0 8px 24px rgba(253,64,2,.4); z-index:8; }
+  .fab:hover { background:var(--wb-accent-700); }
+  .chat { position:fixed; right:0; top:0; bottom:0; width:min(420px,100vw); background:var(--wb-carbon);
+    border-left:1px solid var(--wb-line); z-index:10; display:none; flex-direction:column; }
+  .chat.open { display:flex; }
+  .chat header { display:flex; align-items:center; gap:10px; padding:16px 18px; border-bottom:1px solid var(--wb-line); }
+  .chat header b { font:800 15px var(--font-head); color:var(--wb-white); flex:1; }
+  .chat header small { display:block; font:600 11px var(--font-body); color:var(--wb-muted); }
+  .chat .x { border:0; background:none; color:var(--wb-gray); font-size:18px; cursor:pointer; }
+  .msgs { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
+  .msg { max-width:88%; border-radius:14px; padding:10px 14px; font-size:13px; line-height:1.5; }
+  .msg.u { align-self:flex-end; background:var(--wb-accent); color:#fff; border-bottom-right-radius:4px; }
+  .msg.a { align-self:flex-start; background:var(--wb-panel); color:var(--wb-body-soft); border:1px solid var(--wb-line); border-bottom-left-radius:4px; }
+  .msg.a b { color:var(--wb-white); }
+  .msg .src { display:block; margin-top:7px; font-size:10.5px; color:var(--wb-muted); border-top:1px solid var(--wb-line); padding-top:6px; }
+  .msg .act { margin-top:8px; }
+  .chat .inp { display:flex; gap:8px; padding:12px 14px; border-top:1px solid var(--wb-line); }
+  .chat .inp input { flex:1; background:var(--wb-gunmetal); border:1px solid var(--wb-line); border-radius:10px;
+    padding:10px 13px; font:inherit; font-size:13px; color:var(--wb-white); }
+  .chat .inp input:focus { outline:none; border-color:var(--wb-accent); }
+  .sugg { display:flex; gap:6px; flex-wrap:wrap; padding:0 14px 10px; }
+  .sugg button { border:1px solid var(--wb-line); background:none; color:var(--wb-gray); border-radius:99px;
+    padding:4px 11px; font:600 11px var(--font-body); cursor:pointer; }
+  .sugg button:hover { border-color:var(--wb-accent); color:var(--wb-accent); }
+</style>
+
+<div class="layout">
+  <nav class="side">
+    <div class="wordmark"><span class="tile">W</span><span><b>BDS</b><small>centro de control</small></span></div>
+    <div class="ws"><b>Molinos Delta, S.A.</b><span>$18M ventas · 140 personas · semana 29</span></div>
+    <button class="nav active" data-v="inicio">◈ <span class="lb" data-en="Home">Inicio</span> <span class="cnt">3</span></button>
+    <div class="navgroup"><span class="lb" data-en="Daily operations">Operación diaria</span></div>
+    <button class="nav" data-v="reuniones">◉ <span class="lb" data-en="Meetings">Reuniones</span> <span class="cnt">4</span></button>
+    <button class="nav" data-v="tableros">▦ <span class="lb" data-en="Dashboards & KPIs">Tableros & KPIs</span></button>
+    <button class="nav" data-v="procesos">≡ <span class="lb" data-en="Processes">Procesos</span></button>
+    <button class="nav" data-v="conocimiento">✎ <span class="lb" data-en="Knowledge">Conocimiento</span></button>
+    <div class="navgroup"><span class="lb" data-en="Operating model">Modelo operativo</span></div>
+    <button class="nav sub" data-a="fin"><span class="lb" data-en="Finance & unit economics">Finanzas & unit economics</span></button>
+    <button class="nav sub" data-a="gtm"><span class="lb" data-en="Go-to-market & sales">Go-to-market & ventas</span> <span class="cnt" style="background:var(--warn)">!</span></button>
+    <button class="nav sub" data-a="mkt"><span class="lb" data-en="Marketing & brand">Marketing & marca</span></button>
+    <button class="nav sub" data-a="prod"><span class="lb" data-en="Product & offering">Producto & oferta</span></button>
+    <button class="nav sub" data-a="ops"><span class="lb" data-en="Delivery & operations">Delivery & operaciones</span> <span class="cnt">S1</span></button>
+    <button class="nav sub" data-a="tech"><span class="lb" data-en="Technology & infrastructure">Tecnología & infraestructura</span></button>
+    <button class="nav sub" data-a="gob"><span class="lb" data-en="Governance & leadership">Gobierno & liderazgo</span></button>
+    <div class="navgroup"><span class="lb" data-en="People">Gente</span></div>
+    <button class="nav" data-v="personas">⬡ <span class="lb" data-en="People & organization">Personas & organización</span> <span class="cnt">S3</span></button>
+    <div class="navgroup"><span class="lb" data-en="Strategy">Estrategia</span></div>
+    <button class="nav" data-v="estrategia">△ Play to Win</button>
+    <button class="nav" data-v="okrs">◎ OKRs</button>
+    <button class="nav" data-v="iniciativas">▸ <span class="lb" data-en="Initiatives">Iniciativas</span></button>
+    <div class="side-foot"><span class="dot"></span>Agentes activos · último batch 06:00<br>47 métricas vigiladas · 6 conectores</div>
+  </nav>
+
+  <main>
+    <header class="top">
+      <div><span class="eyebrow" id="v-eye">inicio · lunes 21 jul</span><h1 id="v-title">Tu centro de control</h1></div>
+      <div class="roles" role="tablist" aria-label="Rol">
+        <button class="on" data-r="ceo"><span class="lb" data-en="Owner / CEO">Dueño / CEO</span></button><button data-r="dir">Director</button><button data-r="mgr">Manager</button>
+      </div>
+      <div class="roles" aria-label="Preferencias">
+        <button id="tog-lang" title="Cambiar idioma">EN</button><button id="tog-theme" title="Tema claro/oscuro">◐</button>
+      </div>
+    </header>
+
+    <!-- ═══ INICIO ═══ -->
+    <section class="view active" id="v-inicio">
+      <div class="card" style="border-left:4px solid var(--wb-accent); margin-bottom:13px">
+        <h2>Hoy, para ti <em id="role-name">· dueño / ceo</em></h2>
+        <div id="role-ceo">
+          <div class="row"><span class="t"><b>3 señales</b> destiladas de 47 métricas — entrega, caja y gente. Una causa raíz común entre 01 y 03.</span><span class="chip crit">decidir</span></div>
+          <div class="row"><span class="t"><b>Sesión 9:00</b> — agenda lista: renta de flota es el punto 1, con propuesta cotizada de Jorge.</span><span class="chip acc">preparada</span></div>
+          <div class="row"><span class="t"><b>3 aprobaciones</b> en bandeja: challenge N3, nudge, readout al vault.</span><span class="chip warn">2 min</span></div>
+        </div>
+        <div id="role-dir" style="display:none">
+          <div class="row"><span class="t"><b>Tu área (Operaciones) es la Señal 01</b> — OTIF 87%. Tu propuesta de flota se presenta hoy 9:00.</span><span class="chip crit">hoy</span></div>
+          <div class="row"><span class="t"><b>2 delegaciones tuyas</b> al día · tu check-in semanal se registró el viernes.</span><span class="chip good">al día</span></div>
+          <div class="row"><span class="t"><b>Tu coach</b>: "lleva también el escenario de tercerizar la ruta pico — te lo van a preguntar."</span><span class="chip acc">consejo</span></div>
+        </div>
+        <div id="role-mgr" style="display:none">
+          <div class="row"><span class="t"><b>Tu KPI (merma 2.1%)</b> va mejor que plan — tu racha: 6 semanas verdes.</span><span class="chip good">bien</span></div>
+          <div class="row"><span class="t"><b>Check-in del viernes</b>: tu coach preparó el borrador con los datos ya cargados; solo explica la variación.</span><span class="chip warn">viernes</span></div>
+          <div class="row"><span class="t"><b>Proceso a tu cargo</b>: "Control de calidad recepción" sube a madurez 3 si documentas el paso 4.</span><span class="chip mut">sugerencia</span></div>
+        </div>
+      </div>
+      <div class="grid c4">
+        <div class="card"><div class="num hot">3</div><div class="lbl">señales esta semana (de 47 métricas)</div></div>
+        <div class="card"><div class="num">66</div><div class="lbl">coherencia estratégica · ▾2 explicado</div></div>
+        <div class="card"><div class="num">5<small>/5</small></div><div class="lbl">iniciativas WIP · 1 en riesgo</div></div>
+        <div class="card"><div class="num">11<small>/14</small></div><div class="lbl">check-ins del equipo al día</div></div>
+      </div>
+      <div class="grid c2 mt">
+        <div class="card">
+          <h2>Requiere tu criterio</h2>
+          <div class="row"><span class="t"><b>Challenge N3</b> — capex de flota no planeado (Señales 01+03)</span><button class="btn p" onclick="toast('Challenge aceptado — agendado 9:00')">Aprobar</button></div>
+          <div class="row"><span class="t"><b>Nudge a Raúl</b> — check-in de backup vencido</span><button class="btn p" onclick="toast('Nudge enviado a Raúl')">Aprobar</button></div>
+          <div class="row"><span class="t"><b>Readout semanal</b> → vault + Notion</span><button class="btn p" onclick="toast('Publicado al vault')">Aprobar</button></div>
+        </div>
+        <div class="card">
+          <h2>Actividad de los agentes — anoche</h2>
+          <div class="row"><span class="t">Sync Odoo/CRM/Jira · 47 métricas actualizadas</span><span class="m">06:00 · $0</span></div>
+          <div class="row"><span class="t">3 agentes de vértice interpretaron: 3 señales, 1 causa raíz común</span><span class="m">06:07 · $0.09</span></div>
+          <div class="row"><span class="t">14 coaches prepararon check-ins y consejos personales</span><span class="m">06:09 · $0.06</span></div>
+          <div class="row"><span class="t">Agenda de sesión + minuta pendiente de la anterior</span><span class="m">06:10 · $0.04</span></div>
+        </div>
+      </div>
+      <div class="spec"><b>Spec · hacia atrás</b>Esta pantalla exige: signals engine (destilación 47→3), bandeja `agent_runs.awaiting_approval`, vista por rol (RLS + role), ledger de costo visible.</div>
+    </section>
+
+    <!-- ═══ REUNIONES ═══ -->
+    <section class="view" id="v-reuniones">
+      <div class="grid c2">
+        <div class="card">
+          <h2>Cadencia — el latido</h2>
+          <div class="row"><span class="t"><b>Semanal de dirección</b> · hoy 9:00</span><span class="chip acc">agenda lista</span></div>
+          <div class="row"><span class="t"><b>1:1 Jorge ↔ CEO</b> · mié 11:00</span><span class="chip mut">prep del coach</span></div>
+          <div class="row"><span class="t"><b>Mensual de resultados</b> · vie 1 ago</span><span class="chip mut">pedirá cifras el 29</span></div>
+          <div class="row"><span class="t"><b>Trimestral estratégica</b> · 26 sep</span><span class="chip mut">reto a la aspiración</span></div>
+        </div>
+        <div class="card">
+          <h2>Última reunión → valor extraído</h2>
+          <div class="row"><span class="t">Sesión 14 jul · 52 min · Fireflies</span><span class="chip good">procesada</span></div>
+          <div class="row"><span class="t"><b>2 decisiones</b> con racional → decision log</span><span class="m">aprobadas</span></div>
+          <div class="row"><span class="t"><b>1 challenge</b> + <b>1 follow-up</b></span><span class="m">en curso</span></div>
+          <p class="note mt">Regla UX: una reunión sin decisión, compromiso o challenge extraído es una reunión que el sistema marca como "sin valor capturado".</p>
+        </div>
+      </div>
+      <div class="card mt">
+        <h2>Agenda de hoy 9:00 — preparada por el agente <em>· cada punto trae su origen</em></h2>
+        <div class="row"><span class="t"><b>1 · Renta de flota: aprobar o rechazar</b> — propuesta cotizada de Jorge ($18K/mes) + análisis del advisor con 3 escenarios anexado</span><span class="chip crit">Señales 01+03</span></div>
+        <div class="row"><span class="t"><b>2 · Preview política de crédito canal directo</b> — Lucía trae 2 escenarios (con/sin anticipo 30%); decisión formal el viernes</span><span class="chip warn">Señal 02</span></div>
+        <div class="row"><span class="t"><b>3 · Check-in mensual: margen por SKU</b> — entregado por Lucía; mezclas a medida +9 pts confirma supuesto</span><span class="chip good">OKR O3</span></div>
+        <div class="row"><span class="t"><b>4 · Portal B2B: hito de pagos movido +2 sem</b> — Sofía confirma si es dependencia técnica o de proveedor</span><span class="chip mut">Jira · OKR O2</span></div>
+        <p class="note mt">Nada llega "para informar": los 4 puntos vienen de señales, OKRs o compromisos — y 3 ya traen propuesta preparada porque los coaches la pidieron antes.</p>
+      </div>
+      <div class="spec"><b>Spec</b>`cadence_events` + pipeline Fireflies + extractor de candidatos + prep de agenda por agente (contexto: señales + challenges + OKRs abiertos).</div>
+    </section>
+
+    <!-- ═══ INICIATIVAS ═══ -->
+    <section class="view" id="v-iniciativas">
+      <div class="kanb">
+        <div class="kcol"><h4>Issues · detectados</h4>
+          <div class="kcard"><b>Rotación de choferes 31%</b><span class="m">origen: agente RH · sem 29</span></div>
+          <div class="kcard"><b>DSO 54 días</b><span class="m">origen: agente finanzas</span></div>
+        </div>
+        <div class="kcol"><h4>Oportunidades</h4>
+          <div class="kcard"><b>Canal HoReCa hoteles</b><span class="m">origen: nota del CEO en vault → possibility</span></div>
+          <div class="kcard"><b>Mezclas rinden +9 pts margen</b><span class="m">origen: puente EBITDA</span></div>
+        </div>
+        <div class="kcol"><h4>Iniciativas activas · WIP 5/5</h4>
+          <div class="kcard"><b>Portal B2B</b><span class="m">$450K · Sofía · OPI 78 · ancla: canal directo</span></div>
+          <div class="kcard"><b>Ruteo 48h</b><span class="m">$280K · Jorge · OPI 38 <span class="chip crit">riesgo · Señal 01</span></span></div>
+          <div class="kcard"><b>Mezclas sin gluten</b><span class="m">$350K · Sofía · OPI 66 · ancla: 48h + a medida</span></div>
+          <div class="kcard"><b>Certificación FSSC</b><span class="m">$120K · Raúl · OPI 55 <span class="chip warn">huérfana</span></span></div>
+          <div class="kcard"><b>CRM de ventas</b><span class="m">$90K · Ana · OPI 71 · ancla: 48h + a medida</span></div>
+        </div>
+        <div class="kcol"><h4>Cerradas / matadas</h4>
+          <div class="kcard"><b>App B2C</b><span class="m">matada Q1 — no anclaba a ningún choice</span></div>
+        </div>
+      </div>
+      <p class="note mt">Issues y oportunidades son la ANTESALA: se convierten en iniciativa solo si desplazan a una (WIP duro) y se anclan a un choice. La ejecución del proyecto vive en Jira/Asana del cliente — aquí vive su significado estratégico y su OPI.</p>
+      <div class="spec"><b>Spec</b>Objetos nuevos: `issues` y `opportunities` (con origen: agente/persona/vault). Promoción issue→iniciativa con regla WIP. Frontera Ley 7 se mantiene: lectura de avance, jamás tareas.</div>
+    </section>
+
+    <!-- ═══ TABLEROS ═══ -->
+    <section class="view" id="v-tableros">
+      <div class="grid c3">
+        <div class="card"><h2>Operaciones <em>· señal</em></h2>
+          <div class="row kv"><span class="t">OTIF</span><b>87%</b><span class="var neg">−8</span></div>
+          <div class="row kv"><span class="t">Merma</span><b>2.1%</b><span class="var pos">✓</span></div>
+          <div class="row kv"><span class="t">Utilización</span><b>82%</b><span class="var flat">—</span></div>
+        </div>
+        <div class="card"><h2>Finanzas <em>· señal</em></h2>
+          <div class="row kv"><span class="t">DSO</span><b>54d</b><span class="var neg">+9</span></div>
+          <div class="row kv"><span class="t">Margen bruto</span><b>31.8%</b><span class="var pos">+1.8</span></div>
+          <div class="row kv"><span class="t">Runway</span><b>2.8m</b><span class="var mid">!</span></div>
+        </div>
+        <div class="card"><h2>Recurso humano <em>· señal</em></h2>
+          <div class="row kv"><span class="t">Rotación</span><b>19%</b><span class="var neg">+7</span></div>
+          <div class="row kv"><span class="t">Vacantes clave</span><b>2</b><span class="var mid">45d</span></div>
+          <div class="row kv"><span class="t">eNPS</span><b>34</b><span class="var flat">—</span></div>
+        </div>
+        <div class="card" style="opacity:.6"><h2>Ventas</h2>
+          <div class="row kv"><span class="t">Ingresos MTD</span><b>$1.42M</b><span class="var mid">−5%</span></div>
+          <div class="row kv"><span class="t">Nuevos/mes</span><b>2.7</b><span class="var mid">▴</span></div>
+        </div>
+        <div class="card" style="opacity:.6"><h2>Clientes</h2>
+          <div class="row kv"><span class="t">NPS B2B</span><b>41</b><span class="var flat">—</span></div>
+          <div class="row kv"><span class="t">Churn</span><b>1.2%</b><span class="var flat">—</span></div>
+        </div>
+        <div class="card" style="opacity:.6"><h2>Tecnología</h2>
+          <div class="row kv"><span class="t">Adopción portal</span><b>64%</b><span class="var mid">obj 70</span></div>
+          <div class="row kv"><span class="t">Incidentes</span><b>0</b><span class="var pos">✓</span></div>
+        </div>
+      </div>
+      <p class="note mt">Excepción sobre ruido: área con señal habla, área en plan se atenúa. Cada cifra trae fuente y timestamp (Odoo · CRM · nómina · Jira, 06:00).</p>
+      <div class="card mt" style="border:1.5px dashed rgba(253,64,2,.45)">
+        <h2>Analista — pide el tablero que necesitas <em>· estilo Julius, embebido</em></h2>
+        <div class="chat" style="position:static;display:block;border:0;background:none;width:auto">
+          <div class="inp" style="padding:0 0 10px"><input placeholder="Ej. margen por cliente top-10, últimos 6 meses, contra costo de servir…" aria-label="Describe el tablero"><button class="btn p">Generar</button></div>
+        </div>
+        <div class="sugg" style="padding:0 0 10px">
+          <button onclick="toast('dummy: generaría el tablero desde metric_points + Odoo')">OTIF por ruta vs. costo de flete</button>
+          <button onclick="toast('dummy')">Cohortes de clientes del portal por mes</button>
+          <button onclick="toast('dummy')">Margen por SKU: a medida vs. línea base</button>
+          <button onclick="toast('dummy')">DSO por cliente top-20</button>
+        </div>
+        <div class="row"><span class="t"><b>Vistas guardadas del equipo</b> · "Margen por cliente" (Lucía, anclada a Finanzas) · "OTIF por ruta" (Jorge, anclada a Operaciones — hoy alimenta la Señal 01)</span><span class="chip acc">ancladas</span></div>
+        <p class="note mt">El analista genera la gráfica correcta desde los datos conectados, explica qué hizo, y la vista se puede ANCLAR a su área — donde el agente la empieza a vigilar. Exploración libre, gobierno intacto: mismas fuentes, mismo RLS, costo medido en @bos/ai.</p>
+      </div>
+      <div class="spec"><b>Spec</b>`metric_points` con procedencia + umbrales + puente EBITDA + `saved_views` (prompt→spec de gráfica, dueño, área ancla). El analista corre por @bos/ai (Sonnet) con acceso solo-lectura a conectores.</div>
+    </section>
+
+    <!-- ═══ OKRS ═══ -->
+    <section class="view" id="v-okrs">
+      <div class="card">
+        <h2>Q3 — objetivos anclados a la estrategia <em>(no OKRs sueltos)</em></h2>
+        <div class="row"><span class="t"><b>O1 · Hacer la promesa 48h incumplible de romper</b> — ancla: choice "entrega 48h"</span><span class="chip crit">42%</span></div>
+        <div style="padding:4px 0 8px 16px">
+          <div class="row"><span class="t">KR1 · OTIF ≥95% sostenido 8 semanas</span><div class="track"><div class="fill hot" style="width:42%"></div><div class="tick" style="left:95%"></div></div><span class="m">87/95</span></div>
+          <div class="row"><span class="t">KR2 · Rotación choferes ≤15%</span><div class="track"><div class="fill" style="width:35%"></div></div><span class="m">31→15</span></div>
+        </div>
+        <div class="row"><span class="t"><b>O2 · Probar el canal directo digital</b> — ancla: choice "canal directo B2B"</span><span class="chip warn">61%</span></div>
+        <div style="padding:4px 0 8px 16px">
+          <div class="row"><span class="t">KR1 · 4 clientes nuevos/mes vía portal</span><div class="track"><div class="fill" style="width:67%"></div></div><span class="m">2.7/4</span></div>
+          <div class="row"><span class="t">KR2 · Adopción portal ≥70%</span><div class="track"><div class="fill" style="width:91%"></div></div><span class="m">64/70</span></div>
+        </div>
+        <div class="row"><span class="t"><b>O3 · Margen que financie el crecimiento</b> — ancla: supuesto "mezclas ≥32%"</span><span class="chip good">88%</span></div>
+      </div>
+      <p class="note mt">Diferencia vs. herramientas OKR: aquí cada KR ES una métrica viva de conector (no captura manual) y cada objetivo ancla a un choice o supuesto — si el supuesto se rompe, el OKR se cuestiona solo.</p>
+      <div class="spec"><b>Spec</b>`objectives` + `key_results` (KR = referencia a metric, no copia). Riesgo competitivo asumido: no somos Quantive — OKRs son VISTA de la estrategia, no el producto.</div>
+    </section>
+
+    <!-- ═══ PROCESOS ═══ -->
+    <section class="view" id="v-procesos">
+      <div class="card">
+        <h2>Biblioteca de procesos — madurez BDS-82 <em>(8 áreas)</em></h2>
+        <div class="row"><span class="t"><b>Pipeline Management & Forecasting</b> · GTM & Sales</span><div class="track"><div class="fill ok" style="width:60%"></div><div class="tick" style="left:80%"></div></div><span class="m">3.0→4.0 · Ana</span></div>
+        <div class="row"><span class="t"><b>Cash Flow Management</b> · Finance</span><div class="track"><div class="fill ok" style="width:70%"></div><div class="tick" style="left:80%"></div></div><span class="m">3.5→4.0 · Lucía</span></div>
+        <div class="row"><span class="t"><b>Onboarding & Ramp-Up</b> · People</span><div class="track"><div class="fill hot" style="width:30%"></div><div class="tick" style="left:60%"></div></div><span class="m">1.5→3.0 · Paola · <span class="chip crit">liga Señal 03</span></span></div>
+        <div class="row"><span class="t"><b>Quality Assurance & Testing</b> · Delivery & Ops</span><div class="track"><div class="fill" style="width:50%"></div><div class="tick" style="left:70%"></div></div><span class="m">2.5→3.5 · Martín</span></div>
+        <div class="row"><span class="t"><b>Security & Compliance</b> · Technology</span><div class="track"><div class="fill hot" style="width:30%"></div><div class="tick" style="left:60%"></div></div><span class="m">1.5→3.0 · Raúl · <span class="chip warn">backup sin probar</span></span></div>
+      </div>
+      <p class="note mt">Cada proceso: práctica BDS-82 (o CDIO-128 en tecnología) con rúbrica de madurez, dueño y prioridad por impacto P&L. El agente sugiere el siguiente nivel: "documenta el paso 4 y subes a 3".</p>
+      <div class="spec"><b>Spec</b>Extraer BDS-82 (82 prácticas · 8 áreas · 410 rúbricas · metadata P&L) a `@bos/methodology` como pack #2. `capabilities.source` ya lo contempla.</div>
+    </section>
+
+    <!-- ═══ CONOCIMIENTO ═══ -->
+    <section class="view" id="v-conocimiento">
+      <div class="grid c2">
+        <div class="card">
+          <h2>Memoria institucional — se escribe sola</h2>
+          <div class="row"><span class="t"><b>Decision log</b> · 47 decisiones con racional y alternativas</span><span class="m">buscable</span></div>
+          <div class="row"><span class="t"><b>Minutas</b> · 29 sesiones procesadas</span><span class="m">Fireflies</span></div>
+          <div class="row"><span class="t"><b>Challenges resueltos</b> · 12, con evidencia</span><span class="m">historial</span></div>
+          <div class="row"><span class="t"><b>Playbooks</b> · "cómo decidimos precios" (de 6 decisiones 2025–26) · "criterio de crédito" (nace el viernes con la decisión de la Señal 02)</span><span class="m">generados de decisiones</span></div>
+        </div>
+        <div class="card">
+          <h2>Fuentes conectadas</h2>
+          <div class="row"><span class="t">Vault Obsidian del CEO</span><span class="chip acc">bidireccional</span></div>
+          <div class="row"><span class="t">Notion (wiki interna)</span><span class="chip mut">lectura + RAG</span></div>
+          <div class="row"><span class="t">Drive / SharePoint</span><span class="chip mut">lectura + RAG</span></div>
+          <p class="note mt">Pregunta cualquier cosa: "¿por qué congelamos contrataciones en julio?" → la respuesta cita la decisión, la minuta y el dato que la motivó.</p>
+        </div>
+      </div>
+      <div class="spec"><b>Spec</b>RAG real (pgvector) sobre decisiones+minutas+docs con citas. El diferenciador: la memoria se GENERA operando, no se redacta.</div>
+    </section>
+
+    <!-- ═══ PERSONAS ═══ -->
+    <section class="view" id="v-personas">
+      <div class="card">
+        <h2>El equipo — cada quien con sus números y su coach</h2>
+        <div class="row"><span class="t"><b>Jorge P.</b> · Dir. Operaciones</span><span class="chip good">2 KPIs al día</span><span class="chip crit">1 señal suya</span><span class="m">coach: activo</span></div>
+        <div class="row"><span class="t"><b>Lucía R.</b> · CFO</span><span class="chip good">al día</span><span class="chip warn">decisión viernes</span><span class="m">coach: activo</span></div>
+        <div class="row"><span class="t"><b>Ana G.</b> · Comercial</span><span class="chip good">al día</span><span class="m">racha 8 sem · 2 iniciativas</span><span class="m">coach: activo</span></div>
+        <div class="row"><span class="t"><b>Sofía M.</b> · Producto</span><span class="chip good">al día</span><span class="chip warn">hito movido — punto 4 hoy</span><span class="m">coach: activo</span></div>
+        <div class="row"><span class="t"><b>Paola V.</b> · RH</span><span class="chip warn">propuesta lun 28</span><span class="m">coach: activo</span></div>
+        <div class="row"><span class="t"><b>Raúl T.</b> · TI</span><span class="chip crit">check-in vencido</span><span class="m">nudge aprobado hoy</span></div>
+        <div class="row"><span class="t"><b>+9 managers</b> con delegaciones activas</span><span class="chip good">9/9 al día</span><span class="m">portal seats</span></div>
+      </div>
+      <p class="note mt">People al centro del triángulo: son quienes responden assessments, reciben delegaciones, explican variaciones y mejoran procesos. El coach de cada uno conoce su historial — meses de contexto que ningún reporte tiene.</p>
+      <div class="spec"><b>Spec</b>`people` (por workspace, ligera), `delegations`+`checkins`, coach por persona (agente + canal preferido), portal seats. Privacidad: el coach de Jorge habla con Jorge; el CEO ve estados, no conversaciones.</div>
+    </section>
+
+    <!-- ═══ ESTRATEGIA (P2W) ═══ -->
+    <section class="view" id="v-estrategia">
+      <div class="grid c2">
+        <div class="card" style="border-left:4px solid var(--wb-accent)">
+          <h2>Aspiración v3 · activa</h2>
+          <h3 style="font-size:16px; line-height:1.4">Ser el proveedor #1 de harinas especiales para panificación artesanal en el Bajío para 2028 — de $18M a $30M.</h3>
+          <div class="row mt"><span class="t">Choice 1 · Panaderías medianas Bajío — ganar por entrega 48h + a medida</span><span class="chip crit">bajo challenge N3</span></div>
+          <div class="row"><span class="t">Choice 2 · Canal directo digital B2B</span><span class="chip good">activa</span></div>
+          <div class="row"><span class="t">Choice 3 · NO competir en commodity retail</span><span class="chip mut">explícita</span></div>
+        </div>
+        <div class="card">
+          <h2>Possibilities rivales — antes de comprometer</h2>
+          <div class="row"><span class="t"><b>Canal HoReCa hoteles</b> · desde nota del CEO en vault</span><span class="chip acc">propuesta</span></div>
+          <div class="row"><span class="t"><b>Maquila para marcas premium</b></span><span class="chip mut">estacionada</span></div>
+          <div class="row"><span class="t"><b>Expansión a Occidente</b></span><span class="chip mut">matada Q1</span></div>
+          <p class="note mt">Regla P2W: 2–4 formas rivales de ganar se comparan ANTES de comprometerse; la seleccionada se promueve a aspiración + choices.</p>
+        </div>
+      </div>
+      <div class="card mt">
+        <h2>Supuestos WWHTBT (9) — movidos solo con evidencia</h2>
+        <div class="row"><span class="t">"Clientes pagan 12% de sobreprecio por 48h"</span><span class="chip crit">roto · evidencia: 5–7%</span></div>
+        <div class="row"><span class="t">"4 clientes nuevos/mes vía canal directo"</span><span class="chip warn">en prueba · 2.7 ▴</span></div>
+        <div class="row"><span class="t">"Margen mezclas ≥32%"</span><span class="chip good">sostenido · 34.1%</span></div>
+        <div class="row"><span class="t">+6 supuestos más</span><span class="m">2 sostenidos · 3 prueba · 1 sin probar</span></div>
+      </div>
+      <div class="card mt">
+        <h2>La cascada Play to Win — 5 cajas con checklist y confianza <em>· @bos/p2w</em></h2>
+        <div class="row"><span class="t"><b>1 · Winning Aspiration</b> — ¿ganar significa algo medible y con fecha?</span><div class="track"><div class="fill ok" style="width:85%"></div></div><span class="m">confianza 85%</span></div>
+        <div class="row"><span class="t"><b>2 · Where to Play</b> — ¿segmento, geografía y canal elegidos (y los descartados explícitos)?</span><div class="track"><div class="fill ok" style="width:78%"></div></div><span class="m">78%</span></div>
+        <div class="row"><span class="t"><b>3 · How to Win</b> — ¿la ventaja es real y defendible en el segmento elegido?</span><div class="track"><div class="fill hot" style="width:52%"></div></div><span class="m">52% · challenge N3 pega aquí</span></div>
+        <div class="row"><span class="t"><b>4 · Capabilities</b> — ¿tenemos (o construimos) las capacidades que el how-to-win exige?</span><div class="track"><div class="fill hot" style="width:44%"></div></div><span class="m">44% · cadena de suministro 2.5</span></div>
+        <div class="row"><span class="t"><b>5 · Management Systems</b> — ¿cadencia, métricas y decisiones sostienen la estrategia?</span><div class="track"><div class="fill ok" style="width:71%"></div></div><span class="m">71%</span></div>
+        <p class="note mt">Cada caja tiene su checklist (computeConfidence de @bos/p2w). Las cajas 3–4 bajan porque el modelo operativo las está desmintiendo — la cascada y las áreas se hablan; eso es el triángulo funcionando.</p>
+      </div>
+      <div class="spec"><b>Spec</b>`possibilities` + `aspirations` + `strategic_choices` + `assumptions` (migración 0003 en tu working tree) + checklists/confianza de la cascada por caja (CASCADE_META + computeConfidence, ya extraídos).</div>
+    </section>
+
+    <!-- ═══ ÁREA DEL MODELO OPERATIVO (template) ═══ -->
+    <section class="view" id="v-area">
+      <div class="grid c2">
+        <div class="card">
+          <h2>KPIs del área <em id="a-src"></em></h2>
+          <div id="a-kpis"></div>
+        </div>
+        <div class="card">
+          <h2>Prácticas BDS-82 del área — madurez</h2>
+          <div id="a-pracs"></div>
+        </div>
+      </div>
+      <div class="card mt">
+        <h2>Cuestionario del área <em>· BDS-82, respondido por el equipo líder</em></h2>
+        <div id="a-quest"></div>
+        <p class="note mt">Cada práctica abre su pregunta con rúbrica de madurez 1–5 y se puede DELEGAR a una persona con cadencia. Lo respondido fija la línea base; los conectores después la confirman o desmienten.</p>
+      </div>
+      <div class="card mt">
+        <h2>Delegaciones y coach</h2>
+        <div id="a-deleg"></div>
+        <p class="note mt" id="a-note"></p>
+      </div>
+      <div class="spec"><b>Spec</b>Página de área = vista filtrada de: metric_points + prácticas y PREGUNTAS del pack (con rúbrica) + delegations + señales. Un template, 8 instancias.</div>
+    </section>
+
+    <div class="fict">Wireframe UX/UI — dummy de spec con datos 100% ficticios ("Molinos Delta"). Brand System Wadi Bardawil · BDS — Business Design Shop. Nada construido aún.</div>
+  </main>
+</div>
+<button class="fab" id="fab" aria-label="Abrir advisor">✦</button>
+<aside class="chat" id="chat" aria-label="Advisor">
+  <header>
+    <span class="tile">W</span>
+    <b>Advisor <small>conoce tu workspace · cita fuentes · actúa con tu aprobación</small></b>
+    <button class="x" id="chat-x" aria-label="Cerrar">✕</button>
+  </header>
+  <div class="msgs">
+    <div class="msg u">¿Por qué bajó la coherencia esta semana?</div>
+    <div class="msg a">Bajó de 68 a 66 por dos hechos, no por opinión: <b>(1)</b> la capacidad de cadena de suministro retrocedió 2.8 → 2.5 — el OTIF lleva 3 semanas cayendo y coincide con la debilidad que el assessment de mayo ya marcaba en planeación de flota; <b>(2)</b> el supuesto de sobreprecio 12% sigue roto (evidencia: 5–7% en 6 clientes). No es deriva del score: es la realidad entrando al modelo.
+      <span class="src">Fuentes: metric_points (Odoo, 06:00) · assessment may-2026 P47 · evidencia supuesto S3 · challenge N3 abierto</span></div>
+    <div class="msg u">Prepárame el análisis de la renta de flota para la sesión</div>
+    <div class="msg a">Listo el borrador: comparativo renta ($18K/mes, recupera OTIF ≥95% en 3 sem) vs. tercerizar ruta pico vs. no actuar (proyección 81%). Incluye el impacto en caja cruzado con el DSO de 54 días — las dos señales compiten por la misma caja, lo puse explícito. <b>Está en tu bandeja para aprobar y anexar a la agenda.</b>
+      <span class="src">Usó: puente EBITDA · propuesta de Jorge (check-in) · política de crédito en borrador de Lucía</span>
+      <span class="act"><button class="btn p" onclick="toast('Análisis aprobado → anexado a la agenda de las 9:00')">Aprobar y anexar</button></span></div>
+  </div>
+  <div class="sugg">
+    <button onclick="toast('dummy: el advisor respondería con fuentes')">¿Qué decidimos sobre precios en marzo?</button>
+    <button onclick="toast('dummy')">¿Cómo va el OKR de entrega?</button>
+    <button onclick="toast('dummy')">Redacta el resumen para el consejo</button>
+  </div>
+  <div class="inp"><input placeholder="Pregunta, pide o delega — con voz o texto…" aria-label="Mensaje al advisor"><button class="btn p">▸</button></div>
+</aside>
+<div id="toast" role="status"></div>
+
+<script>
+  const titles = {
+    inicio:['inicio · lunes 21 jul','Tu centro de control'],
+    reuniones:['reuniones · cadencia','Cada reunión produce valor — o se nota'],
+    iniciativas:['iniciativas · issues y oportunidades','Pocas, ancladas, con dueño y con dólar'],
+    tableros:['tableros & kpis · 6 áreas','Señal habla, lo demás calla'],
+    okrs:['okrs · q3','Objetivos anclados a la estrategia'],
+    procesos:['procesos · bds-82','Madurez con dueño y siguiente paso'],
+    conocimiento:['conocimiento · memoria institucional','La empresa que recuerda por qué'],
+    personas:['personas · people al centro','Cada quien con sus números y su coach']
+  };
+  titles.estrategia = ['estrategia · play to win','La cascada: aspiración, choices, supuestos'];
+  const AREAS = {
+    fin:{n:'Finanzas & unit economics', src:'· Odoo + bancos · Lucía R.', k:[['DSO','54d','neg','+9 vs estructura · SEÑAL 02'],['Margen bruto','31.8%','pos','+1.8 pts'],['Runway','2.8m','mid','vigilar con capex'],['Costo por unidad','$4.12','flat','en plan']],
+      p:[['Cash Flow Management',70,80,'3.5→4.0'],['Unit Economics Tracking',60,80,'3.0→4.0'],['Financial Planning & Analysis',50,70,'2.5→3.5']],
+      d:'Lucía: KPI margen por SKU (mensual, al día) · propuesta de política de crédito para el viernes', note:'Coach de Lucía: "prepara 2 escenarios de política de crédito: con y sin anticipo del 30% — la sesión va a pedir ambos."'},
+    gtm:{n:'Go-to-market & ventas', src:'· GoHighLevel · Ana G.', k:[['Ingresos MTD','$1.42M','mid','−5% vs plan'],['Clientes nuevos/mes','2.7','mid','supuesto: 4 · ▴'],['Cobertura pipeline','3.2x','flat','sana'],['Ciclo de venta','23d','pos','−4d']],
+      p:[['Pipeline Management & Forecasting',60,80,'3.0→4.0'],['Ideal Customer Profile',70,80,'3.5→4.0'],['Lead Generation & Qualification',40,60,'2.0→3.0']],
+      d:'Ana: KPI NPS B2B (mensual, vence 28 jul) · racha de 8 semanas al día', note:'El supuesto de demanda sigue EN PRUEBA — el agente pide 4 semanas más de datos antes de mover el choice.'},
+    mkt:{n:'Marketing & marca', src:'· CRM + analytics · Ana G.', k:[['Leads calificados/mes','38','flat','en plan'],['CAC','$920','pos','−8%'],['Share of voice regional','12%','mid','obj 18%']],
+      p:[['Brand Positioning & Messaging',50,70,'2.5→3.5'],['Demand Generation',40,70,'2.0→3.5'],['Content Strategy',30,60,'1.5→3.0']],
+      d:'Sin señal esta semana — área en plan.', note:'El agente vigila: si CAC sube 2 meses seguidos, escala a señal.'},
+    prod:{n:'Producto & oferta', src:'· Odoo + feedback · Sofía M.', k:[['Margen por mezcla a medida','34.1%','pos','confirma supuesto'],['SKUs activos','86','flat','—'],['Tiempo a nueva mezcla','11d','pos','−3d']],
+      p:[['Product Vision & Strategy',70,80,'3.5→4.0'],['Customer Discovery',60,80,'3.0→4.0'],['Feature/Mix Prioritization',50,70,'2.5→3.5']],
+      d:'Sofía: iniciativas Portal B2B (OPI 78) y Sin gluten (OPI 66).', note:'Coach de Sofía: "el hito de pagos se movió +2 sem en Jira — confirma si es dependencia técnica o de proveedor."'},
+    ops:{n:'Delivery & operaciones', src:'· Odoo · Jorge P.', k:[['OTIF','87%','neg','−8 pts · SEÑAL 01'],['Merma','2.1%','pos','mejor que plan'],['Utilización planta','82%','flat','en rango'],['Lead time promedio','52h','neg','obj 48h']],
+      p:[['Project Delivery',60,70,'3.0→3.5'],['Quality Assurance',50,70,'2.5→3.5'],['Process Documentation',40,60,'2.0→3.0']],
+      d:'Jorge: OTIF semanal (al día) · propuesta de flota HOY 9:00.', note:'Su coach ya le sugirió llevar el escenario de tercerizar ruta pico como alternativa.'},
+    tech:{n:'Tecnología & infraestructura', src:'· Jira + diagnóstico CDIO · Raúl T.', k:[['Adopción portal B2B','64%','mid','obj 70%'],['Incidentes críticos','0','pos','30 días limpios'],['Backup probado','No','neg','check-in vencido'],['Deuda técnica (módulos)','3','mid','plan Q4']],
+      p:[['Security & Compliance',30,60,'1.5→3.0 · CDIO M5'],['Architecture & Technical Design',50,70,'2.5→3.5 · CDIO M3'],['Data & AI readiness',30,60,'1.5→3.0 · CDIO M6']],
+      d:'Raúl: pregunta de backup (trimestral, VENCIDA — nudge aprobado hoy) · iniciativa FSSC.', note:'Aquí el pack profundo es CDIO-128: 16 módulos con citas COBIT/NIST/ITIL/DORA.'},
+    gob:{n:'Gobierno & liderazgo', src:'· BOS nativo · CEO', k:[['Decisiones con racional (90d)','47','pos','memoria viva'],['Challenges abiertos','2','mid','1 nivel 3'],['Coherencia estratégica','66','mid','▾2 explicado'],['Adherencia a cadencia','96%','pos','29/30 sesiones']],
+      p:[['Strategic Planning Process',70,80,'3.5→4.0'],['Decision-Making Framework',60,80,'3.0→4.0'],['Risk Management',40,70,'2.0→3.5']],
+      d:'El CEO delega el tablero, no el criterio: 3 decisiones esta semana, todas con propuesta preparada.', note:'Esta área ES el producto: si gobierno y liderazgo maduran, todo lo demás compone.'}
+  };
+  const QUEST = {
+    fin:[['Revenue Model Clarity','respondida · nivel 3','good'],['Unit Economics Tracking','respondida · nivel 3','good'],['Cash Flow Management','respondida · nivel 4','good'],['Financial Planning & Analysis','respondida · nivel 2','warn'],['+6 prácticas más del área','4 respondidas · 2 pendientes','mut']],
+    gtm:[['Ideal Customer Profile Definition','respondida · nivel 4','good'],['Sales Process & Methodology','respondida · nivel 3','good'],['Pipeline Management & Forecasting','respondida · nivel 3','good'],['Lead Generation & Qualification','respondida · nivel 2','warn'],['+6 prácticas más','todas respondidas','mut']],
+    mkt:[['Brand Positioning & Messaging','respondida · nivel 2','warn'],['Demand Generation Strategy','respondida · nivel 2','warn'],['Content Strategy & Production','pendiente','crit'],['Digital Marketing Operations','respondida · nivel 2','warn'],['+6 prácticas más','3 pendientes','mut']],
+    prod:[['Product Vision & Strategy','respondida · nivel 4','good'],['Customer Discovery Process','respondida · nivel 3','good'],['Product Roadmap Management','respondida · nivel 3','good'],['Feature Prioritization Framework','respondida · nivel 2','warn'],['+7 prácticas más','todas respondidas','mut']],
+    ops:[['Project Delivery Methodology','respondida · nivel 3','good'],['Resource Planning & Allocation','respondida · nivel 2 · liga SEÑAL 01','crit'],['Quality Assurance & Testing','respondida · nivel 2','warn'],['Process Documentation & Standardization','respondida · nivel 2','warn'],['+6 prácticas más','2 pendientes','mut']],
+    tech:[['Architecture & Technical Design','respondida · nivel 2','warn'],['Security & Compliance','respondida · nivel 1 · backup sin probar','crit'],['Technical Debt Management','respondida · nivel 2','warn'],['Módulos CDIO-128 (16, con citas)','8 corridos · 8 pendientes','mut'],['Engineering Standards & Practices','pendiente','crit']],
+    gob:[['Strategic Planning Process','respondida · nivel 4','good'],['Decision-Making Framework','respondida · nivel 3','good'],['Board & Advisor Management','respondida · nivel 2','warn'],['Risk Management & Mitigation','respondida · nivel 2','warn'],['+6 prácticas más','1 pendiente','mut']]
+  };
+  function renderArea(id){
+    const a = AREAS[id];
+    document.getElementById('a-quest').innerHTML = (QUEST[id]||[]).map(x=>'<div class="row"><span class="t">'+x[0]+'</span><span class="chip '+x[2]+'">'+x[1]+'</span><button class="btn g" onclick="toast(\'Delegar: elige persona y cadencia (dummy)\')">Delegar</button></div>').join('');
+    document.getElementById('a-src').textContent = a.src;
+    document.getElementById('a-kpis').innerHTML = a.k.map(x=>'<div class="row kv"><span class="t">'+x[0]+'</span><b>'+x[1]+'</b><span class="var '+x[2]+'">'+x[3]+'</span></div>').join('');
+    document.getElementById('a-pracs').innerHTML = a.p.map(x=>'<div class="row"><span class="t">'+x[0]+'</span><div class="track"><div class="fill'+(x[1]<45?' hot':x[1]>=65?' ok':'')+'" style="width:'+x[1]+'%"></div><div class="tick" style="left:'+x[2]+'%"></div></div><span class="m">'+x[3]+'</span></div>').join('');
+    document.getElementById('a-deleg').innerHTML = '<div class="row"><span class="t">'+a.d+'</span></div>';
+    document.getElementById('a-note').textContent = a.note;
+    document.getElementById('v-eye').textContent = 'modelo operativo · ' + a.n.toLowerCase();
+    document.getElementById('v-title').textContent = a.n;
+  }
+  document.querySelectorAll('nav.side button.nav').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('nav.side button.nav').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelectorAll('section.view').forEach(v=>v.classList.remove('active'));
+    if (b.dataset.a) { document.getElementById('v-area').classList.add('active'); renderArea(b.dataset.a); }
+    else {
+      document.getElementById('v-'+b.dataset.v).classList.add('active');
+      document.getElementById('v-eye').textContent = titles[b.dataset.v][0];
+      document.getElementById('v-title').textContent = titles[b.dataset.v][1];
+    }
+    window.scrollTo({top:0});
+  }));
+  document.querySelectorAll('.roles button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.roles button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    ['ceo','dir','mgr'].forEach(r => document.getElementById('role-'+r).style.display = (r===b.dataset.r)?'block':'none');
+    document.getElementById('role-name').textContent = '· ' + b.textContent.toLowerCase();
+  }));
+  // grupos colapsables: cada .navgroup controla los botones hasta el siguiente grupo
+  document.querySelectorAll('.navgroup').forEach(g => {
+    const members = [];
+    let n = g.nextElementSibling;
+    while (n && !n.classList.contains('navgroup') && n.tagName === 'BUTTON') { members.push(n); n = n.nextElementSibling; }
+    g.addEventListener('click', () => {
+      g.classList.toggle('closed');
+      members.forEach(m => m.classList.toggle('hidden', g.classList.contains('closed')));
+    });
+  });
+  // tema claro/oscuro
+  document.getElementById('tog-theme').addEventListener('click', () => document.body.classList.toggle('light'));
+  // idioma ES/EN — el chrome del app via diccionario data-en; contenido completo se internacionaliza en el producto real
+  let en = false;
+  document.getElementById('tog-lang').addEventListener('click', function(){
+    en = !en;
+    this.textContent = en ? 'ES' : 'EN';
+    document.querySelectorAll('.lb').forEach(s => {
+      if (!s.dataset.es) s.dataset.es = s.textContent;
+      s.textContent = en ? (s.dataset.en || s.dataset.es) : s.dataset.es;
+    });
+    toast(en ? 'Chrome in English — full content i18n is spec\'d via string dictionary' : 'Interfaz en español');
+  });
+  const chat = document.getElementById('chat');
+  document.getElementById('fab').addEventListener('click', () => chat.classList.add('open'));
+  document.getElementById('chat-x').addEventListener('click', () => chat.classList.remove('open'));
+  let tt;
+  function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2400); }
+</script>

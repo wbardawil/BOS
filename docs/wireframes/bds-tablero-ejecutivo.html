@@ -1,0 +1,242 @@
+<title>BDS · Tablero Operativo Ejecutivo — pura señal</title>
+<style>
+  :root {
+    --wb-gunmetal:#222831; --wb-carbon:#1A1E25; --wb-panel:#2C333E;
+    --wb-accent:#FD4002; --wb-accent-700:#D63601;
+    --wb-white:#FFFFFF; --wb-body:#B8C0CC; --wb-body-soft:#C2C9D4;
+    --wb-gray:#98A0AD; --wb-muted:#6B7480; --wb-line:rgba(255,255,255,.09);
+    --good:#66B37E; --good-soft:rgba(102,179,126,.13);
+    --warn:#D0A24A; --warn-soft:rgba(208,162,74,.13);
+    --crit:#DD7A6D; --crit-soft:rgba(221,122,109,.13);
+    --font-head:"Archivo",Inter,system-ui,sans-serif;
+    --font-body:"Manrope",Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--wb-gunmetal); color:var(--wb-body);
+    font:14.5px/1.5 var(--font-body); -webkit-font-smoothing:antialiased; }
+  body::after { content:"W"; position:fixed; right:-40px; bottom:-90px; font:900 320px/1 var(--font-head);
+    color:var(--wb-white); opacity:.045; pointer-events:none; z-index:0; }
+  main { max-width:1180px; margin:0 auto; padding:56px 26px 90px; position:relative; z-index:1; }
+
+  .eyebrow { color:var(--wb-accent); font:700 13px var(--font-body); letter-spacing:2px; text-transform:uppercase; }
+  .bar { width:64px; height:6px; background:var(--wb-accent); margin:14px 0 16px; }
+  h1 { font:800 clamp(26px,4vw,42px)/1.04 var(--font-head); color:var(--wb-white); letter-spacing:-1px; margin:0 0 8px; text-wrap:pretty; }
+  .lede { color:var(--wb-body); font-size:15px; max-width:70ch; margin:0; }
+  .lede b { color:var(--wb-white); }
+
+  h2.sec { font:700 12px var(--font-body); letter-spacing:2px; text-transform:uppercase; color:var(--wb-gray); margin:44px 0 14px; }
+  h2.sec em { color:var(--wb-accent); font-style:normal; }
+
+  /* franja señal/ruido */
+  .ratio { display:flex; gap:22px; align-items:center; margin-top:26px; background:var(--wb-carbon);
+    border:1px solid var(--wb-line); border-radius:18px; padding:16px 22px; flex-wrap:wrap; }
+  .ratio .big { font:900 40px/1 var(--font-head); color:var(--wb-accent); font-variant-numeric:tabular-nums; }
+  .ratio .exp { font-size:14px; color:var(--wb-body); max-width:52ch; }
+  .ratio .exp b { color:var(--wb-white); }
+  .ratio .quiet { margin-left:auto; font-size:12.5px; color:var(--wb-muted); text-align:right; }
+
+  /* señales */
+  .signals { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:920px){ .signals { grid-template-columns:1fr; } }
+  .signal { background:var(--wb-panel); border:1px solid var(--wb-line); border-top:5px solid var(--wb-accent);
+    border-radius:18px; padding:18px 20px; display:flex; flex-direction:column; gap:9px; }
+  .signal .n { font:900 13px var(--font-head); color:var(--wb-accent); letter-spacing:1px; }
+  .signal h3 { font:800 17px/1.25 var(--font-head); color:var(--wb-white); margin:0; letter-spacing:-.2px; }
+  .signal .kpi { font:800 26px var(--font-head); color:var(--wb-white); font-variant-numeric:tabular-nums; }
+  .signal .kpi small { font:600 13px var(--font-body); color:var(--wb-gray); }
+  .signal p { margin:0; font-size:13px; color:var(--wb-body); }
+  .signal p b { color:var(--wb-white); }
+  .sowhat { border-left:3px solid var(--wb-accent); padding-left:10px; font-style:italic; color:var(--wb-body-soft); }
+  .signal .dec { margin-top:auto; background:var(--wb-carbon); border-radius:10px; padding:9px 12px; font-size:12.5px; }
+  .signal .dec b { color:var(--wb-accent); display:block; font-size:11px; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:3px; }
+  .tri { font-size:11px; color:var(--wb-muted); letter-spacing:.3px; }
+
+  /* bridge */
+  .card { background:var(--wb-panel); border:1px solid var(--wb-line); border-radius:18px; padding:18px 22px; }
+  .card .sub { font-size:12.5px; color:var(--wb-gray); margin-top:4px; }
+  .legend { display:flex; gap:16px; font:600 11.5px var(--font-body); color:var(--wb-gray); margin-top:8px; flex-wrap:wrap; }
+  .legend i { width:11px; height:11px; border-radius:3px; display:inline-block; margin-right:6px; vertical-align:-1px; }
+
+  /* áreas funcionales */
+  .areas { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:920px){ .areas { grid-template-columns:1fr; } }
+  .area { background:var(--wb-panel); border:1px solid var(--wb-line); border-radius:18px; padding:16px 18px; }
+  .area.quiet { opacity:.62; }
+  .area .head { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .area h3 { font:800 15px var(--font-head); color:var(--wb-white); margin:0; flex:1; letter-spacing:-.2px; }
+  .chip { display:inline-flex; align-items:center; gap:5px; font:700 10.5px var(--font-body); border-radius:99px; padding:2.5px 9px; text-transform:uppercase; letter-spacing:.8px; white-space:nowrap; }
+  .chip::before { content:""; width:6px; height:6px; border-radius:99px; background:currentColor; }
+  .chip.good { color:var(--good); background:var(--good-soft); }
+  .chip.warn { color:var(--warn); background:var(--warn-soft); }
+  .chip.crit { color:var(--crit); background:var(--crit-soft); }
+  .krow { display:flex; align-items:baseline; gap:8px; padding:6px 0; border-top:1px solid var(--wb-line); font-size:13px; }
+  .krow:first-of-type { border-top:0; }
+  .krow .k { color:var(--wb-body); flex:1; }
+  .krow b { font:800 14.5px var(--font-head); color:var(--wb-white); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .var { font:700 12px var(--font-body); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .var.neg { color:var(--crit); } .var.pos { color:var(--good); } .var.mid { color:var(--warn); } .var.flat { color:var(--wb-muted); }
+  .area .owner { margin-top:10px; font-size:11.5px; color:var(--wb-muted); }
+  .area .nada { margin-top:8px; font-size:12px; color:var(--wb-muted); font-style:italic; }
+
+  /* decisiones */
+  .table-wrap { overflow-x:auto; background:var(--wb-panel); border:1px solid var(--wb-line); border-radius:18px; padding:8px 14px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { text-align:left; font:700 10.5px var(--font-body); text-transform:uppercase; letter-spacing:1.2px; color:var(--wb-gray); padding:8px 10px; border-bottom:1px solid var(--wb-line); }
+  td { padding:10px; border-bottom:1px solid var(--wb-line); vertical-align:top; color:var(--wb-body); }
+  tr:last-child td { border-bottom:0; }
+  td b { color:var(--wb-white); }
+
+  .punch { font:800 clamp(19px,2.6vw,26px)/1.35 var(--font-head); color:var(--wb-accent); max-width:30ch; margin:48px 0 0; letter-spacing:-.3px; }
+  .footer { display:flex; justify-content:space-between; align-items:center; margin-top:40px; border-top:1px solid var(--wb-line); padding-top:16px; font:600 12px var(--font-body); color:var(--wb-muted); }
+  .footer .mark { display:flex; align-items:center; gap:9px; }
+  .footer .tile { width:26px; height:26px; border-radius:6px; background:var(--wb-accent); color:var(--wb-white); font:900 15px/26px var(--font-head); text-align:center; }
+  .fict { font-size:11.5px; color:var(--wb-muted); margin-top:10px; }
+
+  [data-r] { opacity:0; transform:translateY(26px); animation:wbUp .6s cubic-bezier(.2,.7,.2,1) forwards; }
+  @keyframes wbUp { to { opacity:1; transform:translateY(0);} }
+  @media (prefers-reduced-motion:reduce){ [data-r] { opacity:1; transform:none; animation:none; } }
+</style>
+
+<main>
+  <div data-r style="animation-delay:.05s">
+    <div class="eyebrow">tablero operativo ejecutivo · semana 29 · molinos delta</div>
+    <div class="bar"></div>
+    <h1>Lo único que el equipo líder necesita ver este lunes</h1>
+    <p class="lede">Regla del tablero: <b>señal, no ruido.</b> Lo que va en plan se reporta en una línea y no roba atención. Lo que se desvía sube con su "so what", su dueño y la decisión que exige. Nada aparece dos veces.</p>
+  </div>
+
+  <div class="ratio" data-r style="animation-delay:.13s">
+    <span class="big">3</span>
+    <span class="exp"><b>señales esta semana</b>, destiladas de 47 métricas monitoreadas en 6 áreas (Odoo, CRM, nómina, Jira). Las otras 44 están en rango — los agentes las vigilan para que ustedes no tengan que hacerlo.</span>
+    <span class="quiet">Última corrida: hoy 06:00<br>Todo con fuente y timestamp</span>
+  </div>
+
+  <h2 class="sec" data-r style="animation-delay:.21s">Las 3 señales — y la decisión que fuerza cada una</h2>
+  <div class="signals">
+    <div class="signal" data-r style="animation-delay:.26s">
+      <span class="n">SEÑAL 01 · ENTREGA</span>
+      <h3>La promesa 48h se está rompiendo</h3>
+      <span class="kpi">OTIF 87% <small>obj ≥95 · 3.ª semana ▾</small></span>
+      <p class="sowhat">"So what": el choice principal (ganar por entrega) se vuelve incumplible. ~$54K de recompra en riesgo acumulado.</p>
+      <div class="dec"><b>Decisión hoy</b>Aprobar o rechazar renta de 2 unidades ($18K/mes, propuesta de Jorge). Se paga sola si retiene 2 clientes.</div>
+      <span class="tri">△ Toca: choice "entrega 48h" · capacidad cadena de suministro · iniciativa Ruteo 48h</span>
+    </div>
+    <div class="signal" data-r style="animation-delay:.34s">
+      <span class="n">SEÑAL 02 · CAJA</span>
+      <h3>Estamos financiando a los clientes con nuestra caja</h3>
+      <span class="kpi">DSO 54 días <small>estructura: 45 · ▴ desde 47</small></span>
+      <p class="sowhat">"So what": ~$310K de capital de trabajo atrapado por encima de estructura — justo cuando se evalúa capex de flota. Las dos señales compiten por la misma caja.</p>
+      <div class="dec"><b>Decisión viernes</b>Política de crédito del canal directo ANTES de escalar el portal: anticipo, límite por cliente y pronto pago.</div>
+      <span class="tri">△ Toca: supuesto "canal directo mejora margen" · capacidad finanzas</span>
+    </div>
+    <div class="signal" data-r style="animation-delay:.42s">
+      <span class="n">SEÑAL 03 · GENTE</span>
+      <h3>La rotación de choferes es la raíz de la Señal 01</h3>
+      <span class="kpi">19% anualizada <small>tolerable: 12 · choferes: 31%</small></span>
+      <p class="sowhat">"So what": capacidad de flota = camiones + choferes. Rentar unidades sin retener choferes compra 3 semanas, no resuelve. Una causa raíz, no dos problemas.</p>
+      <div class="dec"><b>Decisión lunes 28</b>Paquete de retención de choferes vs. tercerizar ruta pico — se decide JUNTO con la Señal 01, no después.</div>
+      <span class="tri">△ Toca: capacidad RH/operaciones · misma cadena causal que Señal 01</span>
+    </div>
+  </div>
+
+  <h2 class="sec" data-r style="animation-delay:.5s">El puente del mes — dónde se ganó y perdió el EBITDA <em>(plan vs. real, K$/mes)</em></h2>
+  <div class="card" data-r style="animation-delay:.55s">
+    <svg viewBox="0 0 400 170" style="width:100%;max-width:760px;display:block" role="img" aria-label="Puente de EBITDA: plan 210, volumen menos 14, precio y mezcla más 19, flete y merma menos 11, gastos fijos menos 6, real 198 mil dólares por mes.">
+      <line x1="12" y1="138" x2="392" y2="138" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+      <rect x="20" y="42" width="44" height="96" rx="3" fill="#FFFFFF" opacity=".92"/>
+      <text x="42" y="34" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">210</text>
+      <text x="42" y="152" fill="#98A0AD" font-size="9.5" text-anchor="middle">Plan</text>
+      <line x1="64" y1="42" x2="78" y2="42" stroke="rgba(255,255,255,.25)" stroke-dasharray="3 3"/>
+      <rect x="78" y="42" width="44" height="45" rx="3" fill="#DD7A6D"/>
+      <text x="100" y="34" fill="#DD7A6D" font-size="11" font-weight="800" text-anchor="middle">−14</text>
+      <text x="100" y="152" fill="#98A0AD" font-size="9.5" text-anchor="middle">Volumen</text>
+      <line x1="122" y1="87" x2="136" y2="87" stroke="rgba(255,255,255,.25)" stroke-dasharray="3 3"/>
+      <rect x="136" y="26" width="44" height="61" rx="3" fill="#66B37E"/>
+      <text x="158" y="18" fill="#66B37E" font-size="11" font-weight="800" text-anchor="middle">+19</text>
+      <text x="158" y="152" fill="#98A0AD" font-size="9.5" text-anchor="middle">Precio/mezcla</text>
+      <line x1="180" y1="26" x2="194" y2="26" stroke="rgba(255,255,255,.25)" stroke-dasharray="3 3"/>
+      <rect x="194" y="26" width="44" height="35" rx="3" fill="#DD7A6D"/>
+      <text x="216" y="18" fill="#DD7A6D" font-size="11" font-weight="800" text-anchor="middle">−11</text>
+      <text x="216" y="152" fill="#98A0AD" font-size="9.5" text-anchor="middle">Flete/merma</text>
+      <line x1="238" y1="61" x2="252" y2="61" stroke="rgba(255,255,255,.25)" stroke-dasharray="3 3"/>
+      <rect x="252" y="61" width="44" height="19" rx="3" fill="#DD7A6D"/>
+      <text x="274" y="53" fill="#DD7A6D" font-size="11" font-weight="800" text-anchor="middle">−6</text>
+      <text x="274" y="152" fill="#98A0AD" font-size="9.5" text-anchor="middle">G. fijos</text>
+      <line x1="296" y1="80" x2="310" y2="80" stroke="rgba(255,255,255,.25)" stroke-dasharray="3 3"/>
+      <rect x="310" y="80" width="44" height="58" rx="3" fill="#FD4002"/>
+      <text x="332" y="72" fill="#FD4002" font-size="11" font-weight="900" text-anchor="middle">198</text>
+      <text x="332" y="152" fill="#98A0AD" font-size="9.5" text-anchor="middle">Real</text>
+    </svg>
+    <div class="legend"><span><i style="background:#FFFFFF"></i>plan / real</span><span><i style="background:#66B37E"></i>a favor</span><span><i style="background:#DD7A6D"></i>en contra</span></div>
+    <p class="sub">Lectura del agente: el precio/mezcla (+19) confirma el supuesto de mezclas a medida. Volumen (−14) y flete (−11) son las Señales 01/03 en dinero: −$25K/mes. El puente conecta cada barra con su señal — no hay sorpresas sueltas.</p>
+  </div>
+
+  <h2 class="sec" data-r style="animation-delay:.6s">Las 6 áreas — lo que se desvía habla, lo que va en plan calla</h2>
+  <div class="areas">
+    <div class="area" data-r style="animation-delay:.64s">
+      <div class="head"><h3>Operaciones</h3><span class="chip crit">atención</span></div>
+      <div class="krow"><span class="k">OTIF</span><b>87%</b><span class="var neg">−8 pts</span></div>
+      <div class="krow"><span class="k">Merma</span><b>2.1%</b><span class="var pos">mejor que plan</span></div>
+      <div class="krow"><span class="k">Utilización planta</span><b>82%</b><span class="var flat">en rango</span></div>
+      <div class="owner">Dueño: Jorge P. · fuente: Odoo · check-in al día</div>
+    </div>
+    <div class="area" data-r style="animation-delay:.68s">
+      <div class="head"><h3>Finanzas</h3><span class="chip crit">atención</span></div>
+      <div class="krow"><span class="k">DSO</span><b>54 d</b><span class="var neg">+9 d</span></div>
+      <div class="krow"><span class="k">Margen bruto</span><b>31.8%</b><span class="var pos">+1.8 pts</span></div>
+      <div class="krow"><span class="k">Runway de caja</span><b>2.8 m</b><span class="var mid">vigilar con capex</span></div>
+      <div class="owner">Dueña: Lucía R. · fuente: Odoo + bancos</div>
+    </div>
+    <div class="area" data-r style="animation-delay:.72s">
+      <div class="head"><h3>Recurso Humano</h3><span class="chip crit">atención</span></div>
+      <div class="krow"><span class="k">Rotación anualizada</span><b>19%</b><span class="var neg">+7 pts</span></div>
+      <div class="krow"><span class="k">Vacantes clave</span><b>2</b><span class="var mid">jefe calidad: 45 d</span></div>
+      <div class="krow"><span class="k">eNPS</span><b>34</b><span class="var flat">en rango</span></div>
+      <div class="owner">Dueña: Paola V. · fuente: nómina + encuesta</div>
+    </div>
+    <div class="area quiet" data-r style="animation-delay:.76s">
+      <div class="head"><h3>Ventas</h3><span class="chip warn">vigilar</span></div>
+      <div class="krow"><span class="k">Ingresos MTD</span><b>$1.42M</b><span class="var mid">−5% vs plan</span></div>
+      <div class="krow"><span class="k">Clientes nuevos/mes</span><b>2.7</b><span class="var mid">supuesto: 4 · tendencia ▴</span></div>
+      <div class="krow"><span class="k">Cobertura pipeline</span><b>3.2x</b><span class="var flat">sana</span></div>
+      <div class="owner">Dueña: Ana G. · fuente: GoHighLevel</div>
+      <div class="nada">Sin decisión esta semana — el supuesto de demanda sigue en prueba 4 semanas más.</div>
+    </div>
+    <div class="area quiet" data-r style="animation-delay:.8s">
+      <div class="head"><h3>Clientes</h3><span class="chip good">en plan</span></div>
+      <div class="krow"><span class="k">NPS B2B</span><b>41</b><span class="var flat">estable</span></div>
+      <div class="krow"><span class="k">Churn mensual</span><b>1.2%</b><span class="var flat">en rango</span></div>
+      <div class="krow"><span class="k">Concentración top-5</span><b>38%</b><span class="var mid">vigilar</span></div>
+      <div class="owner">Dueña: Ana G. · fuente: CRM + facturación</div>
+      <div class="nada">Nada que decidir. El agente avisa si top-5 supera 40%.</div>
+    </div>
+    <div class="area quiet" data-r style="animation-delay:.84s">
+      <div class="head"><h3>Tecnología y datos</h3><span class="chip warn">vigilar</span></div>
+      <div class="krow"><span class="k">Adopción portal B2B</span><b>64%</b><span class="var mid">obj 70%</span></div>
+      <div class="krow"><span class="k">Incidentes críticos</span><b>0</b><span class="var flat">30 días limpios</span></div>
+      <div class="krow"><span class="k">Backup probado</span><b>No</b><span class="var mid">check-in de Raúl pendiente</span></div>
+      <div class="owner">Dueño: Raúl T. · fuente: Jira + diagnóstico</div>
+      <div class="nada">Escala a señal si el hito de pagos se vuelve a mover.</div>
+    </div>
+  </div>
+
+  <h2 class="sec" data-r style="animation-delay:.88s">Decisiones de la semana — una fila por decisión, nada más entra a la sesión</h2>
+  <div class="table-wrap" data-r style="animation-delay:.92s">
+    <table>
+      <thead><tr><th>#</th><th>Decisión</th><th>Origen</th><th>Dueño de la propuesta</th><th>Cuándo</th></tr></thead>
+      <tbody>
+        <tr><td><b>1</b></td><td><b>Renta de flota</b> — aprobar/rechazar 2 unidades $18K/mes</td><td>Señal 01</td><td>Jorge P. (propuesta cotizada)</td><td>Hoy, sesión 9:00</td></tr>
+        <tr><td><b>2</b></td><td><b>Retención de choferes vs. tercerizar ruta pico</b> — resolver la causa raíz</td><td>Señal 03</td><td>Paola V. + Jorge P.</td><td>Lunes 28</td></tr>
+        <tr><td><b>3</b></td><td><b>Política de crédito canal directo</b> — anticipo, límites, pronto pago</td><td>Señal 02</td><td>Lucía R.</td><td>Viernes 25</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="punch" data-r style="animation-delay:.96s">47 métricas vigiladas. 3 señales. 3 decisiones. Eso es operar con señal pura.</p>
+
+  <div class="footer">
+    <span class="mark"><span class="tile">W</span> Wadi Bardawil · BDS — Business Design Shop</span>
+    <span>semana 29 · generado 06:00</span>
+  </div>
+  <div class="fict">Dummy de spec — todos los datos, empresas y personas son ficticios ("Molinos Delta, S.A. de C.V."). Nada está construido aún.</div>
+</main>

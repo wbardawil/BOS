@@ -1,0 +1,246 @@
+<title>BDS · Simulación — un lunes operando</title>
+<style>
+  /* Wadi Bardawil Brand System — gunmetal + naranja, Archivo/Manrope (fallback de sistema) */
+  :root {
+    --wb-gunmetal:#222831; --wb-carbon:#1A1E25; --wb-panel:#2C333E;
+    --wb-accent:#FD4002; --wb-accent-700:#D63601;
+    --wb-white:#FFFFFF; --wb-body:#B8C0CC; --wb-body-soft:#C2C9D4;
+    --wb-gray:#98A0AD; --wb-muted:#6B7480; --wb-line:rgba(255,255,255,.09);
+    --good:#66B37E; --good-soft:rgba(102,179,126,.14);
+    --warn:#D0A24A; --warn-soft:rgba(208,162,74,.14);
+    --crit:#DD7A6D; --crit-soft:rgba(221,122,109,.14);
+    --font-head:"Archivo","Archivo Black",Inter,system-ui,sans-serif;
+    --font-body:"Manrope",Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--wb-gunmetal); color:var(--wb-body);
+    font:15px/1.5 var(--font-body); -webkit-font-smoothing:antialiased; position:relative; }
+  /* marca de agua W */
+  body::after { content:"W"; position:fixed; right:-40px; bottom:-90px; font:900 340px/1 var(--font-head);
+    color:var(--wb-white); opacity:.05; pointer-events:none; z-index:0; }
+  main { max-width:1060px; margin:0 auto; padding:64px 24px 96px; position:relative; z-index:1; }
+
+  .eyebrow { color:var(--wb-accent); font:700 13px var(--font-body); letter-spacing:2px; text-transform:uppercase; }
+  .bar { width:64px; height:6px; background:var(--wb-accent); margin:14px 0 18px; }
+  h1 { font:800 clamp(28px,4.5vw,46px)/1.02 var(--font-head); color:var(--wb-white);
+    letter-spacing:-1px; margin:0 0 14px; text-wrap:pretty; }
+  .lede { color:var(--wb-body); font-size:16px; max-width:62ch; margin:0 0 32px; line-height:1.5; }
+  .lede b { color:var(--wb-white); font-weight:700; }
+
+  /* controles */
+  .ctl { display:flex; gap:12px; align-items:center; margin-bottom:24px; flex-wrap:wrap; }
+  .ctl button { font:700 14px var(--font-body); border-radius:11px; padding:11px 24px; cursor:pointer; border:0; }
+  .ctl button.primary { background:var(--wb-accent); color:var(--wb-white); box-shadow:0 6px 18px rgba(253,64,2,.28); }
+  .ctl button.primary:hover { background:var(--wb-accent-700); }
+  .ctl button.ghost { background:none; border:1.5px solid rgba(255,255,255,.22); color:var(--wb-body-soft); }
+  .ctl button.ghost:hover { border-color:var(--wb-accent); color:var(--wb-white); }
+  .ctl button:disabled { opacity:.4; cursor:default; box-shadow:none; }
+  .ctl button:focus-visible { outline:2px solid var(--wb-accent); outline-offset:2px; }
+  .progress { font:600 13px var(--font-body); color:var(--wb-gray); font-variant-numeric:tabular-nums; letter-spacing:.5px; }
+
+  .wrap { display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:start; }
+  @media (max-width:860px){ .wrap { grid-template-columns:1fr; } .state { position:static !important; } }
+
+  /* pasos — tarjeta panel, radio 18 */
+  .step { background:var(--wb-panel); border:1px solid var(--wb-line); border-radius:18px;
+    padding:18px 20px; margin-bottom:14px; opacity:0; transform:translateY(26px); }
+  .step.in { animation:wbUp .6s cubic-bezier(.2,.7,.2,1) forwards; }
+  @keyframes wbUp { to { opacity:1; transform:translateY(0);} }
+  @media (prefers-reduced-motion:reduce){ .step { opacity:1; transform:none; } .step.in { animation:none; } }
+  .step .head { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:7px; }
+  .step time { font:700 13px var(--font-head); color:var(--wb-gray); font-variant-numeric:tabular-nums; letter-spacing:.5px; }
+  .actor { font:700 10px var(--font-body); letter-spacing:1.5px; text-transform:uppercase; border-radius:99px; padding:3px 10px; }
+  .actor.sys { background:rgba(255,255,255,.08); color:var(--wb-gray); }
+  .actor.agent { background:rgba(253,64,2,.14); color:var(--wb-accent); }
+  .actor.human { background:var(--wb-white); color:var(--wb-carbon); }
+  .step h3 { font:800 15.5px/1.25 var(--font-head); color:var(--wb-white); margin:0; flex:1; min-width:200px; letter-spacing:-.2px; }
+  .step p { margin:4px 0 0; font-size:13.5px; color:var(--wb-body); line-height:1.5; }
+  .frag { margin-top:12px; border:1px solid var(--wb-line); border-radius:11px; background:var(--wb-carbon); padding:12px 15px; font-size:13px; }
+  .frag .fn { font-size:11px; color:var(--wb-muted); font-family:ui-monospace,Consolas,monospace; margin-bottom:6px; letter-spacing:.3px; }
+  .bubble { border-left:3px solid var(--wb-white); padding-left:12px; font-style:italic; color:var(--wb-body-soft); }
+  .bubble.agent { border-color:var(--wb-accent); }
+  code { font:12px ui-monospace,"Cascadia Mono",Consolas,monospace; background:rgba(255,255,255,.08); border-radius:4px; padding:1px 6px; color:var(--wb-body-soft); }
+  .cost { margin-left:auto; font:600 11.5px var(--font-body); color:var(--wb-muted); font-variant-numeric:tabular-nums; }
+
+  /* gráficas del agente */
+  .chart-title { font:700 11px var(--font-body); letter-spacing:1.5px; text-transform:uppercase; color:var(--wb-gray); margin:10px 0 6px; }
+  .legend { display:flex; gap:14px; flex-wrap:wrap; font:600 11px var(--font-body); color:var(--wb-gray); margin-top:4px; }
+  .legend span { display:inline-flex; align-items:center; gap:6px; }
+  .legend i { width:14px; height:0; border-top:2.5px solid; display:inline-block; }
+  .legend i.solid { border-color:var(--wb-accent); }
+  .legend i.dash-w { border-color:var(--wb-white); border-top-style:dashed; }
+  .legend i.dash-g { border-color:var(--wb-gray); border-top-style:dashed; }
+  .mbar { display:grid; grid-template-columns:132px 1fr 64px; gap:9px; align-items:center; padding:4px 0; font-size:12px; color:var(--wb-body); }
+  .mtrack { position:relative; height:9px; background:rgba(255,255,255,.08); border-radius:4px; }
+  .mfill { position:absolute; inset:0 auto 0 0; background:var(--wb-gray); border-radius:4px 3px 3px 4px; }
+  .mfill.hot { background:var(--wb-accent); }
+  .mtick { position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--wb-white); border-radius:1px; }
+  .mval { text-align:right; font-variant-numeric:tabular-nums; color:var(--wb-gray); font-size:11.5px; }
+
+  /* panel de estado — tarjetas de dato */
+  .state { position:sticky; top:20px; background:var(--wb-carbon); border:1px solid var(--wb-line);
+    border-radius:18px; padding:18px 18px 14px; }
+  .state h2 { font:700 11px var(--font-body); text-transform:uppercase; letter-spacing:2px; color:var(--wb-accent); margin:0 0 12px; }
+  .srow { display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:7px 0; border-top:1px solid var(--wb-line); font-size:12.5px; }
+  .srow:first-of-type { border-top:0; }
+  .srow b { font:800 15px var(--font-head); color:var(--wb-white); font-variant-numeric:tabular-nums; transition:color .3s; }
+  .srow .lbl { color:var(--wb-gray); }
+  .flash { color:var(--wb-accent) !important; }
+  .chip { display:inline-flex; align-items:center; gap:5px; font:650 11px var(--font-body); border-radius:99px; padding:2px 9px; white-space:nowrap; }
+  .chip::before { content:""; width:6px; height:6px; border-radius:99px; background:currentColor; }
+  .chip.good { color:var(--good); background:var(--good-soft); }
+  .chip.warn { color:var(--warn); background:var(--warn-soft); }
+  .chip.crit { color:var(--crit); background:var(--crit-soft); }
+
+  /* cierre — momento naranja (el único callout a sangre) */
+  .fin { display:none; background:var(--wb-accent); color:var(--wb-white); border-radius:18px;
+    padding:26px 30px; margin-top:18px; font:600 17px/1.5 var(--font-body); }
+  .fin b { font:800 21px var(--font-head); display:block; margin-bottom:8px; letter-spacing:-.3px; }
+
+  .footer { display:flex; justify-content:space-between; align-items:center; margin-top:56px;
+    border-top:1px solid var(--wb-line); padding-top:16px; font:600 12px var(--font-body); color:var(--wb-muted); letter-spacing:.5px; }
+  .footer .mark { display:flex; align-items:center; gap:9px; }
+  .footer .tile { width:26px; height:26px; border-radius:6px; background:var(--wb-accent); color:var(--wb-white);
+    font:900 15px/26px var(--font-head); text-align:center; }
+  .fict { font-size:11.5px; color:var(--wb-muted); margin-top:10px; }
+</style>
+
+<main>
+  <div class="eyebrow">ejercicio · BDS operando en vivo</div>
+  <div class="bar"></div>
+  <h1>Un lunes en Molinos Delta: 6:00 → 9:30, paso a paso</h1>
+  <p class="lede">Nada de esto lo capturó una persona. Avanza y ve cómo <b>los sistemas traen los números, los agentes traen el significado y las personas traen el juicio</b> — con el estado del workspace moviéndose a la derecha.</p>
+
+  <div class="ctl">
+    <button class="primary" id="next">Avanzar ▸</button>
+    <button class="ghost" id="reset">Reiniciar</button>
+    <span class="progress" id="prog">Paso 0 de 12</span>
+  </div>
+
+  <div class="wrap">
+    <div id="timeline"></div>
+    <aside class="state" aria-live="polite">
+      <h2>Estado del workspace</h2>
+      <div class="srow"><span class="lbl">OTIF (Odoo)</span><b id="s-otif">90%</b></div>
+      <div class="srow"><span class="lbl">Clientes nuevos/mes (CRM)</span><b id="s-crm">2.4</b></div>
+      <div class="srow"><span class="lbl">Cadena de suministro</span><b id="s-cap">2.8</b></div>
+      <div class="srow"><span class="lbl">OPI · Ruteo 48h</span><b id="s-opi">41</b></div>
+      <div class="srow"><span class="lbl">Supuestos</span><span id="s-sup"><span class="chip crit">1 roto</span> <span class="chip warn">4 prueba</span></span></div>
+      <div class="srow"><span class="lbl">Coherencia</span><b id="s-coh">68</b></div>
+      <div class="srow"><span class="lbl">Bandeja del CEO</span><b id="s-inbox">0</b></div>
+      <div class="srow"><span class="lbl">Check-in de Jorge</span><span id="s-jorge"><span class="chip warn">pendiente</span></span></div>
+      <div class="srow"><span class="lbl">Decisiones hoy</span><b id="s-dec">0</b></div>
+      <div class="srow"><span class="lbl">Costo LLM del día</span><b id="s-cost">$0.00</b></div>
+    </aside>
+  </div>
+
+  <div class="fin" id="fin"><b>Fin del ejercicio.</b> 3 syncs sin costo de tokens · 5 intervenciones de agentes (~$0.19) · 2 humanos aportando solo criterio · 1 decisión con racional · el vault actualizado antes de las 9:30. Eso es el Chief of Staff digital: los sistemas traen los números, los agentes el significado, las personas el juicio.</div>
+
+  <div class="footer">
+    <span class="mark"><span class="tile">W</span> Wadi Bardawil · BDS — Business Design Shop</span>
+    <span id="folio">00 / 12</span>
+  </div>
+  <div class="fict">Simulación con datos 100% ficticios — "Molinos Delta, S.A. de C.V." y todas las personas son invenciones de diseño. Nada está construido aún: este dummy define el spec.</div>
+</main>
+
+<script>
+  const S = {
+    otif: el('s-otif'), crm: el('s-crm'), cap: el('s-cap'), opi: el('s-opi'),
+    coh: el('s-coh'), inbox: el('s-inbox'), dec: el('s-dec'), cost: el('s-cost'),
+    jorge: el('s-jorge')
+  };
+  function el(id){ return document.getElementById(id); }
+  function set(node, html){ node.innerHTML = html; node.classList.add('flash'); setTimeout(()=>node.classList.remove('flash'), 900); }
+
+  const steps = [
+    { t:'06:00', actor:'sys', who:'SYNC · ODOO', title:'El ERP deposita el OTIF de la semana: 87%', cost:'$0.00 — dato puro, sin LLM',
+      p:'Job Inngest con credenciales del workspace (RLS). Se escribe <code>metric_point(OTIF, 87%, fuente: odoo)</code>. Tercera semana consecutiva a la baja (93 → 90 → 87, objetivo ≥95).',
+      fx(){ set(S.otif,'87% ▾'); } },
+    { t:'06:01', actor:'sys', who:'SYNC · CRM', title:'El CRM deposita: 2.7 clientes nuevos/mes', cost:'$0.00',
+      p:'GoHighLevel reporta pipeline y cierres. El supuesto de demanda dice "4/mes con canal directo". Va en 2.7 — pero con tendencia positiva (2.1 → 2.4 → 2.7).',
+      fx(){ set(S.crm,'2.7 ▴'); } },
+    { t:'06:02', actor:'sys', who:'READ-SYNC · JIRA', title:'Jira avisa: el hito "pagos en línea" se movió +2 semanas', cost:'$0.00',
+      p:'Solo lectura, siempre. BOS no gestiona el proyecto — registra que un hito ligado a la iniciativa Portal B2B se desplazó. Eso es dato estratégico, no gestión.',
+      fx(){} },
+    { t:'06:05', actor:'agent', who:'AGENTE · MODELO OPERATIVO', title:'Interpreta con el banco de 128 preguntas: la capacidad retrocede', cost:'+$0.04 (Sonnet)',
+      p:'Cruza el OTIF con el assessment de mayo: la pregunta 47 (planeación de capacidad de flota) quedó "parcial". El dato vivo confirma la debilidad diagnosticada. Baja madurez de cadena de suministro 2.8 → 2.5 y lo anota como evidencia.',
+      frag:'<div class="fn">agente-modelo-operativo → juicio + análisis</div>' +
+        '<div class="bubble agent">"El OTIF no cae por rutas: cae donde el diagnóstico ya había marcado debilidad (planeación de flota). Esto no es ruido operativo — es una capacidad retrocediendo."</div>' +
+        '<div class="chart-title">OTIF — real y estimación a 5 semanas</div>' +
+        '<svg viewBox="0 0 330 132" style="width:100%;max-width:380px;display:block" role="img" aria-label="OTIF: cayó de 93 a 87 por ciento en tres semanas. Con renta de flota se estima recuperar 95 por ciento en tres semanas; sin acción, caer a 81.">' +
+          '<line x1="10" y1="35" x2="255" y2="35" stroke="rgba(255,255,255,.28)" stroke-width="1" stroke-dasharray="2 3"/>' +
+          '<text x="259" y="38" fill="#98A0AD" font-size="9.5">objetivo 95%</text>' +
+          '<polyline points="10,45 50,60 90,75" fill="none" stroke="#FD4002" stroke-width="2.5" stroke-linecap="round"/>' +
+          '<circle cx="90" cy="75" r="3.5" fill="#FD4002"/>' +
+          '<text x="84" y="92" fill="#FD4002" font-size="10" font-weight="700">87%</text>' +
+          '<polyline points="90,75 130,65 170,45 210,35 250,35" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round"/>' +
+          '<text x="256" y="28" fill="#FFFFFF" font-size="9.5">95% · sem 33</text>' +
+          '<polyline points="90,75 130,85 170,95 210,101 250,106" fill="none" stroke="#98A0AD" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round"/>' +
+          '<text x="256" y="110" fill="#98A0AD" font-size="9.5">81% · sem 33</text>' +
+          '<text x="10" y="126" fill="#6B7480" font-size="9.5">sem 26</text>' +
+          '<text x="82" y="126" fill="#6B7480" font-size="9.5">hoy</text>' +
+          '<text x="232" y="126" fill="#6B7480" font-size="9.5">sem 33</text>' +
+        '</svg>' +
+        '<div class="legend"><span><i class="solid"></i>real (Odoo)</span><span><i class="dash-w"></i>estimación con renta de flota</span><span><i class="dash-g"></i>estimación sin acción</span></div>' +
+        '<div class="chart-title" style="margin-top:14px">Madurez de capacidades — actual (barra) vs objetivo (marca)</div>' +
+        '<div class="mbar"><span>Ventas B2B</span><div class="mtrack"><div class="mfill" style="width:42%"></div><div class="mtick" style="left:70%"></div></div><span class="mval">2.1 → 3.5</span></div>' +
+        '<div class="mbar"><span style="color:#FD4002;font-weight:700">Cadena de suministro</span><div class="mtrack"><div class="mfill hot" style="width:50%"></div><div class="mtick" style="left:70%"></div></div><span class="mval" style="color:#FD4002">2.8 ▾ 2.5</span></div>' +
+        '<div class="mbar"><span>Datos y sistemas</span><div class="mtrack"><div class="mfill" style="width:38%"></div><div class="mtick" style="left:60%"></div></div><span class="mval">1.9 → 3.0</span></div>' +
+        '<div class="mbar"><span>Desarrollo de producto</span><div class="mtrack"><div class="mfill" style="width:64%"></div><div class="mtick" style="left:80%"></div></div><span class="mval">3.2 → 4.0</span></div>' +
+        '<div class="mbar"><span>Finanzas</span><div class="mtrack"><div class="mfill" style="width:50%"></div><div class="mtick" style="left:60%"></div></div><span class="mval">2.5 → 3.0</span></div>' +
+        '<div class="bubble agent" style="margin-top:12px">"Análisis de impacto: cada punto de OTIF bajo objetivo pone en riesgo ~$9K/mes de recompra en clientes que compraron por la promesa 48h. Tres semanas de caída ≈ $54K en riesgo acumulado. La renta de flota ($18K/mes) se paga sola si retiene 2 clientes — y recupera ≥95% hacia la semana 33. Sin acción, el modelo estima 81% y el choice principal queda incumplible."</div>',
+      fx(){ set(S.cap,'2.5 ▾'); } },
+    { t:'06:06', actor:'agent', who:'AGENTE · ESTRATEGIA (P2W)', title:'Mueve los supuestos WWHTBT con evidencia, no opinión', cost:'+$0.03 (Sonnet)',
+      p:'Supuesto de demanda ("4 clientes/mes"): sigue EN PRUEBA — 2.7 con tendencia positiva no lo rompe; propone 4 semanas más de datos. Supuesto de sobreprecio 12%: sigue ROTO desde la semana pasada. Nada se mueve sin evidencia.',
+      fx(){} },
+    { t:'06:07', actor:'agent', who:'AGENTE · PORTAFOLIO (OPI + LIFECYCLE)', title:'Recalcula el OPI de "Ruteo 48h": 41 → 38', cost:'+$0.02 (Haiku)',
+      p:'Hito movido en Jira + OTIF cayendo = la iniciativa más ligada al choice principal pierde tracción. El engine de ciclo de vida pondera: en expansión temprana, entrega confiable pesa más que canales nuevos — esto es LO urgente.',
+      fx(){ set(S.opi,'38 ▾'); } },
+    { t:'06:10', actor:'agent', who:'COS ORQUESTADOR', title:'Sintetiza los 3 juicios: challenge nivel 3 + agenda del lunes', cost:'+$0.06 (Sonnet)',
+      p:'Los tres vértices cuentan la misma historia: no es un problema de ejecución (N1) ni de iniciativa (N2) — es del modelo operativo (N3): capex de flota que no está en el plan. Arma la agenda con esto como punto 1 y pone 3 acciones en la bandeja del CEO.',
+      fx(){ set(S.inbox,'3'); } },
+    { t:'06:12', actor:'agent', who:'COACH DE JORGE', title:'Redacta el mensaje para Jorge — y espera aprobación', cost:'+$0.01 (Haiku)',
+      p:'El coach conoce los números de Jorge, su historial de check-ins y su rol. No le pide el dato (ya llegó solo): le pide criterio. El mensaje va a la bandeja — outbound jamás sale solo.',
+      frag:'<div class="fn">borrador → Teams de Jorge (esperando aprobación del CEO)</div><div class="bubble agent">"Jorge, tu OTIF lleva 3 semanas cayendo y el diagnóstico apunta a flota, no a rutas. El lunes es el punto 1 de la agenda: llega con una propuesta concreta de capacidad — ¿renta, rework de rutas con flota actual, o tercerizar el pico?"</div>',
+      fx(){} },
+    { t:'07:30', actor:'human', who:'JORGE · DIR. OPERACIONES', title:'Responde desde Teams: criterio y evidencia, no captura', cost:'$0.00',
+      p:'El CEO aprobó el nudge a las 7:10 desde el teléfono. Jorge no reporta el número (ya está): explica y propone. Su respuesta queda como evidencia del challenge.',
+      frag:'<div class="fn">check-in de Jorge → evidencia registrada</div><div class="bubble">"Es disponibilidad de flota, no rutas. Coticé renta de 2 unidades: $18K/mes con opción a compra. Con eso recupero 95% de OTIF en 3 semanas. Lo presento el lunes."</div>',
+      fx(){ set(S.jorge,'<span class="chip good">al día</span>'); set(S.inbox,'2'); } },
+    { t:'08:50', actor:'human', who:'CEO · MARCELA', title:'Cockpit, 10 minutos: aprueba challenge y readout', cost:'$0.00',
+      p:'Dos aprobaciones: el challenge N3 entra formal a la sesión y el readout se publica al vault. La coherencia se recalcula: 68 → 66 (una capacidad retrocedió). El número baja porque la realidad bajó — eso es integridad del score, no un bug.',
+      fx(){ set(S.inbox,'0'); set(S.coh,'66 ▾'); } },
+    { t:'09:00', actor:'human', who:'SESIÓN SEMANAL DE DIRECCIÓN', title:'Se decide con datos: renta de 2 unidades, 6 meses', cost:'+$0.03 (minuta Haiku)',
+      p:'Fireflies transcribe. La propuesta de Jorge se aprueba con condición de revisión al cierre de Q3 contra el margen de Lucía. El agente extrae la decisión con racional y alternativas → decision log (con aprobación del CEO al cierre).',
+      fx(){ set(S.dec,'1'); } },
+    { t:'09:30', actor:'sys', who:'PUBLICACIÓN', title:'El vault del CEO amanece actualizado', cost:'$0.00',
+      p:'<code>published/readout-2026-07-20.md</code> en Obsidian: minuta, decisión, challenge N3 abierto, coherencia 66 con explicación. El martes a las 6:00, los syncs empiezan otra vez. El sistema no descansa; las personas sí.',
+      fx(){ document.getElementById('fin').style.display='block'; } }
+  ];
+
+  let i = 0, cost = 0;
+  const costs = [0,0,0,.04,.03,.02,.06,.01,0,0,.03,0];
+  const tl = el('timeline'), btn = el('next'), prog = el('prog'), folio = el('folio');
+
+  btn.addEventListener('click', () => {
+    if (i >= steps.length) return;
+    const s = steps[i];
+    const d = document.createElement('div');
+    d.className = 'step';
+    d.innerHTML = '<div class="head"><time>' + s.t + '</time><span class="actor ' + s.actor + '">' +
+      (s.actor==='sys'?'sistema':s.actor==='agent'?'agente':'humano') + '</span><h3>' + s.who + ' — ' + s.title + '</h3>' +
+      '<span class="cost">' + s.cost + '</span></div><p>' + s.p + '</p>' + (s.frag ? '<div class="frag">' + s.frag + '</div>' : '');
+    tl.appendChild(d);
+    requestAnimationFrame(() => d.classList.add('in'));
+    d.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    s.fx();
+    cost += costs[i];
+    set(S.cost, '$' + cost.toFixed(2));
+    i++;
+    prog.textContent = 'Paso ' + i + ' de ' + steps.length;
+    folio.textContent = String(i).padStart(2,'0') + ' / 12';
+    if (i >= steps.length) { btn.disabled = true; btn.textContent = 'Día completo ✓'; }
+  });
+
+  el('reset').addEventListener('click', () => location.reload());
+</script>

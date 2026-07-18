@@ -1,0 +1,693 @@
+<title>BDS · Cockpit del CEO — Dummy operativo</title>
+<style>
+  :root {
+    --bg: #F2F5F4;
+    --surface: #FFFFFF;
+    --surface-2: #E9EEEC;
+    --ink: #1A2421;
+    --ink-2: #45534E;
+    --muted: #6C7A75;
+    --line: #D8E0DD;
+    --accent: #0E6E63;
+    --accent-ink: #FFFFFF;
+    --accent-soft: #E0EEEB;
+    --good: #2E7D46;
+    --good-soft: #E3F0E7;
+    --warn: #8A6410;
+    --warn-soft: #F5ECD8;
+    --crit: #A93327;
+    --crit-soft: #F7E4E1;
+    --shadow: 0 1px 3px rgba(26,36,33,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0F1513;
+      --surface: #171F1C;
+      --surface-2: #1F2925;
+      --ink: #E6ECEA;
+      --ink-2: #B7C4BF;
+      --muted: #85948E;
+      --line: #2A3631;
+      --accent: #3CA795;
+      --accent-ink: #0F1513;
+      --accent-soft: #1B322D;
+      --good: #66B37E;
+      --good-soft: #1C2E22;
+      --warn: #D0A24A;
+      --warn-soft: #322A16;
+      --crit: #DD7A6D;
+      --crit-soft: #38201C;
+      --shadow: 0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F1513; --surface: #171F1C; --surface-2: #1F2925;
+    --ink: #E6ECEA; --ink-2: #B7C4BF; --muted: #85948E; --line: #2A3631;
+    --accent: #3CA795; --accent-ink: #0F1513; --accent-soft: #1B322D;
+    --good: #66B37E; --good-soft: #1C2E22; --warn: #D0A24A; --warn-soft: #322A16;
+    --crit: #DD7A6D; --crit-soft: #38201C; --shadow: 0 1px 3px rgba(0,0,0,.4);
+  }
+  :root[data-theme="light"] {
+    --bg: #F2F5F4; --surface: #FFFFFF; --surface-2: #E9EEEC;
+    --ink: #1A2421; --ink-2: #45534E; --muted: #6C7A75; --line: #D8E0DD;
+    --accent: #0E6E63; --accent-ink: #FFFFFF; --accent-soft: #E0EEEB;
+    --good: #2E7D46; --good-soft: #E3F0E7; --warn: #8A6410; --warn-soft: #F5ECD8;
+    --crit: #A93327; --crit-soft: #F7E4E1; --shadow: 0 1px 3px rgba(26,36,33,.08);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── Sidebar ── */
+  nav.side {
+    width: 232px; flex-shrink: 0; border-right: 1px solid var(--line);
+    background: var(--surface); padding: 20px 12px; display: flex; flex-direction: column; gap: 2px;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .wordmark {
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    font-size: 22px; letter-spacing: .5px; padding: 4px 12px 2px;
+  }
+  .wordmark small { display: block; font-family: system-ui, sans-serif; font-size: 10.5px; color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase; margin-top: 2px; }
+  .ws {
+    margin: 14px 8px 18px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--bg); font-size: 13px;
+  }
+  .ws b { display: block; font-size: 13.5px; }
+  .ws span { color: var(--muted); font-size: 12px; }
+  nav.side button.nav {
+    display: flex; align-items: center; gap: 9px; width: 100%; text-align: left;
+    padding: 9px 12px; border: 0; border-radius: 7px; background: none; color: var(--ink-2);
+    font: inherit; font-size: 14px; cursor: pointer;
+  }
+  nav.side button.nav:hover { background: var(--surface-2); }
+  nav.side button.nav.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  nav.side button.nav:focus-visible, .btn:focus-visible, .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .nav .cnt {
+    margin-left: auto; background: var(--crit); color: #fff; border-radius: 99px;
+    font-size: 11px; font-weight: 700; min-width: 19px; height: 19px;
+    display: inline-flex; align-items: center; justify-content: center; padding: 0 5px;
+  }
+  .nav .cnt:empty, .nav .cnt.zero { display: none; }
+  .side-foot { margin-top: auto; padding: 12px; font-size: 11.5px; color: var(--muted); border-top: 1px solid var(--line); }
+  .agent-dot { display: inline-block; width: 8px; height: 8px; border-radius: 99px; background: var(--good); margin-right: 6px; }
+
+  /* ── Main ── */
+  main { flex: 1; padding: 26px 32px 60px; max-width: 1160px; }
+  header.top { display: flex; align-items: baseline; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+  header.top h1 { font-size: 21px; margin: 0; font-weight: 650; }
+  header.top .sub { color: var(--muted); font-size: 13.5px; }
+  .theme-toggle {
+    margin-left: auto; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+    border-radius: 7px; padding: 5px 12px; font: inherit; font-size: 13px; cursor: pointer;
+  }
+
+  section.view { display: none; }
+  section.view.active { display: block; }
+
+  .grid { display: grid; gap: 14px; }
+  .cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .cols-2 { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 1000px) { .cols-4 { grid-template-columns: repeat(2,1fr); } .cols-3, .cols-2 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px 18px; box-shadow: var(--shadow);
+  }
+  .card h2 { font-size: 13px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); font-weight: 650; }
+  .card h3 { font-size: 15px; margin: 0 0 6px; }
+
+  /* stat tiles */
+  .stat .num {
+    font-family: Georgia, "Iowan Old Style", serif; font-size: 34px; line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .lbl { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .stat .delta { font-size: 12.5px; font-weight: 600; }
+  .delta.up { color: var(--good); } .delta.down { color: var(--crit); }
+  .spark { margin-top: 8px; }
+
+  /* chips y estados — siempre punto/ícono + texto, nunca color solo */
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+    border-radius: 99px; padding: 2.5px 10px; white-space: nowrap;
+  }
+  .chip::before { content: ""; width: 7px; height: 7px; border-radius: 99px; background: currentColor; }
+  .chip.good { color: var(--good); background: var(--good-soft); }
+  .chip.warn { color: var(--warn); background: var(--warn-soft); }
+  .chip.crit { color: var(--crit); background: var(--crit-soft); }
+  .chip.neutral { color: var(--ink-2); background: var(--surface-2); }
+  .chip.accent { color: var(--accent); background: var(--accent-soft); }
+
+  .kind {
+    font-size: 11px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-soft); border-radius: 5px; padding: 2px 8px;
+  }
+
+  /* approval cards */
+  .approval { display: flex; gap: 14px; padding: 14px 0; border-top: 1px solid var(--line); align-items: flex-start; }
+  .approval:first-of-type { border-top: 0; }
+  .approval .body { flex: 1; min-width: 0; }
+  .approval .body p { margin: 5px 0 3px; font-size: 14px; }
+  .approval .src { font-size: 12px; color: var(--muted); }
+  .approval .draft {
+    margin-top: 8px; font-size: 13px; background: var(--bg); border: 1px solid var(--line);
+    border-radius: 7px; padding: 9px 12px; color: var(--ink-2); font-style: italic;
+  }
+  .btn {
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    border-radius: 7px; padding: 6px 14px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn.subtle { color: var(--muted); }
+  .btn:hover { filter: brightness(1.05); }
+  .btn-row { display: flex; gap: 8px; flex-shrink: 0; }
+
+  /* feed */
+  .feed { list-style: none; margin: 0; padding: 0; font-size: 13.5px; }
+  .feed li { display: flex; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); color: var(--ink-2); }
+  .feed li:first-child { border-top: 0; }
+  .feed time { color: var(--muted); font-size: 12px; flex-shrink: 0; width: 52px; font-variant-numeric: tabular-nums; }
+
+  /* tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); padding: 6px 10px; border-bottom: 1px solid var(--line); font-weight: 650; }
+  td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tr:last-child td { border-bottom: 0; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .table-wrap { overflow-x: auto; }
+
+  /* barras finas (una sola serie + marca de objetivo en tinta) */
+  .bar-row { display: grid; grid-template-columns: 150px 1fr 66px; gap: 10px; align-items: center; padding: 6px 0; font-size: 13px; }
+  .bar-track { position: relative; height: 10px; background: var(--surface-2); border-radius: 4px; }
+  .bar-fill { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 4px 3px 3px 4px; }
+  .bar-target { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); border-radius: 1px; }
+  .bar-val { color: var(--ink-2); font-variant-numeric: tabular-nums; text-align: right; font-size: 12.5px; }
+
+  /* historial de check-ins: puntos + leyenda textual */
+  .dots { display: inline-flex; gap: 4px; }
+  .dots i { width: 9px; height: 9px; border-radius: 99px; display: inline-block; }
+  .dots i.ok { background: var(--good); } .dots i.miss { background: var(--crit); } .dots i.pend { background: var(--surface-2); border: 1px solid var(--line); }
+
+  .pipeline { display: flex; gap: 0; align-items: stretch; margin: 6px 0 16px; flex-wrap: wrap; }
+  .pipe-step { flex: 1; min-width: 150px; padding: 10px 14px; border: 1px solid var(--line); background: var(--surface); font-size: 13px; position: relative; }
+  .pipe-step:first-child { border-radius: 8px 0 0 8px; }
+  .pipe-step:last-child { border-radius: 0 8px 8px 0; }
+  .pipe-step + .pipe-step { border-left: 0; }
+  .pipe-step b { display: block; font-size: 13px; }
+  .pipe-step span { color: var(--muted); font-size: 12px; }
+  .pipe-step.done { background: var(--accent-soft); }
+
+  .aspiracion {
+    font-family: Georgia, "Iowan Old Style", serif; font-size: 17px; line-height: 1.5;
+    border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; margin: 8px 0 12px;
+    text-wrap: balance;
+  }
+  .meta-line { font-size: 12.5px; color: var(--muted); }
+
+  .form-inline { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .form-inline input, .form-inline select {
+    font: inherit; font-size: 13px; padding: 7px 10px; border: 1px solid var(--line);
+    border-radius: 7px; background: var(--bg); color: var(--ink);
+  }
+  .form-inline input { flex: 1; min-width: 140px; }
+
+  .note-card { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; background: var(--bg); }
+  .note-card .fn { font-size: 12px; color: var(--muted); font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+  .note-card p { margin: 6px 0; font-size: 13.5px; color: var(--ink-2); }
+
+  .banner {
+    display: flex; gap: 10px; align-items: center; font-size: 13.5px;
+    border: 1px solid var(--line); border-left: 3px solid var(--warn);
+    background: var(--warn-soft); color: var(--ink); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;
+  }
+
+  /* toast */
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 8px;
+    font-size: 13.5px; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+    max-width: 90vw;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
+
+  .empty { color: var(--muted); font-size: 13.5px; font-style: italic; padding: 10px 0; }
+  .mt { margin-top: 14px; }
+  .fict { font-size: 11.5px; color: var(--muted); margin-top: 30px; border-top: 1px solid var(--line); padding-top: 10px; }
+
+  @media (max-width: 760px) {
+    .layout { flex-direction: column; }
+    nav.side { width: 100%; height: auto; position: static; flex-direction: row; overflow-x: auto; align-items: center; padding: 10px; }
+    .wordmark small, .ws, .side-foot { display: none; }
+    main { padding: 18px 14px 50px; }
+  }
+</style>
+
+<div class="layout">
+  <nav class="side" aria-label="Navegación principal">
+    <div class="wordmark">BDS<small>Digital Chief of Staff</small></div>
+    <div class="ws"><b>Molinos Delta, S.A.</b><span>Harinas especiales · $18M ventas · 140 pers.</span></div>
+    <button class="nav active" data-view="cockpit">◈ Cockpit <span class="cnt" id="cnt-approvals">4</span></button>
+    <button class="nav" data-view="triangulo">△ Triángulo</button>
+    <button class="nav" data-view="reuniones">◉ Reuniones <span class="cnt" id="cnt-meet">4</span></button>
+    <button class="nav" data-view="delegaciones">⇄ Delegaciones <span class="cnt" id="cnt-deleg">1</span></button>
+    <button class="nav" data-view="iniciativas">▸ Iniciativas</button>
+    <button class="nav" data-view="captura">✎ Captura · Vault</button>
+    <div class="side-foot"><span class="agent-dot"></span>Agente CoS activo · último batch 06:10</div>
+  </nav>
+
+  <main>
+    <header class="top">
+      <h1 id="view-title">Cockpit — lunes 21 jul</h1>
+      <span class="sub" id="view-sub">Todo lo que requiere tu criterio hoy, en una pantalla.</span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Cambiar tema">◐ Tema</button>
+    </header>
+
+    <!-- ═══════════ COCKPIT ═══════════ -->
+    <section class="view active" id="view-cockpit">
+      <div class="grid cols-4">
+        <div class="card stat">
+          <div class="num" id="coh-num">68</div>
+          <div class="lbl">Coherencia estratégica <span class="delta up">▲ +14 vs. abril</span></div>
+          <svg class="spark" width="130" height="30" viewBox="0 0 130 30" role="img" aria-label="Tendencia de coherencia: de 54 a 68 en doce semanas">
+            <polyline points="0,24 12,23 24,25 36,20 48,21 60,17 72,18 84,14 96,12 108,10 120,9 130,7"
+              fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="130" cy="7" r="3" fill="var(--accent)"/>
+          </svg>
+        </div>
+        <div class="card stat">
+          <div class="num">5<span style="font-size:20px;color:var(--muted)">/5</span></div>
+          <div class="lbl">Iniciativas en curso — WIP lleno</div>
+          <div class="mt"><span class="chip warn">1 huérfana (sin choice)</span></div>
+        </div>
+        <div class="card stat">
+          <div class="num">4<span style="font-size:20px;color:var(--muted)">/9</span></div>
+          <div class="lbl">Supuestos bajo prueba</div>
+          <div class="mt"><span class="chip crit">1 roto esta semana</span></div>
+        </div>
+        <div class="card stat">
+          <div class="num" id="checkin-num">2<span style="font-size:20px;color:var(--muted)">/4</span></div>
+          <div class="lbl">Check-ins de delegados al día</div>
+          <div class="mt"><span class="chip crit" id="checkin-chip">1 vencido — Raúl (TI)</span></div>
+        </div>
+      </div>
+
+      <div class="grid cols-2 mt">
+        <div class="card">
+          <h2>Requiere tu aprobación (<span id="approvals-left">4</span>)</h2>
+          <div id="approval-list"></div>
+          <div class="empty" id="approvals-empty" style="display:none">Bandeja limpia. El agente sigue trabajando.</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card">
+            <h2>Actividad del agente — batch nocturno</h2>
+            <ul class="feed">
+              <li><time>06:10</time>Procesó la transcripción de la Sesión semanal (14 jul) vía Fireflies → minuta generada.</li>
+              <li><time>06:10</time>Extrajo 2 decisiones candidatas y 1 challenge de la minuta → en tu bandeja.</li>
+              <li><time>06:08</time>Generó 4 check-ins de la semana; detectó 1 vencido (Raúl, backup TI) → nudge redactado.</li>
+              <li><time>06:05</time>Detectó que "Certificación FSSC" sigue sin ancla a un choice → marcada huérfana.</li>
+              <li><time>06:02</time>Preparó la agenda de la sesión del lun 21 jul (abajo).</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2>Próxima sesión — lun 21 jul, 9:00</h2>
+            <h3>Sesión semanal de dirección</h3>
+            <ul class="feed">
+              <li><time>1.</time>OTIF cayó 3 semanas seguidas — ¿el ruteo 48h está fallando o el supuesto era optimista? <span class="chip crit">challenge N2</span></li>
+              <li><time>2.</time>Decisión pendiente: congelar o no las 2 contrataciones de ventas.</li>
+              <li><time>3.</time>Check-in mensual de Lucía: margen bruto por SKU (entregado, revisar).</li>
+              <li><time>4.</time>Avance Portal B2B: hito de pagos en línea.</li>
+            </ul>
+            <div class="meta-line mt">Agenda propuesta por el agente a partir de la cadencia + challenges abiertos. Editable antes de la sesión.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ TRIÁNGULO ═══════════ -->
+    <section class="view" id="view-triangulo">
+      <div class="grid cols-3">
+        <div class="card">
+          <h2>Estrategia</h2>
+          <div class="aspiracion">Ser el proveedor #1 de harinas especiales para panificación artesanal en el Bajío para 2028 — de $18M a $30M.</div>
+          <div class="meta-line">Aspiración v3 · activa · desafiada hace 21 días</div>
+          <div class="mt">
+            <h3>Choices</h3>
+            <ul class="feed">
+              <li>Panaderías artesanales medianas, Bajío y Occidente · ganar por entrega 48h + mezclas a medida <span class="chip good">activa</span></li>
+              <li>Canal directo digital B2B (portal de pedidos) <span class="chip good">activa</span></li>
+              <li>NO competir en harina commodity retail <span class="chip neutral">explícita</span></li>
+            </ul>
+          </div>
+          <div class="mt">
+            <h3>Supuestos (9)</h3>
+            <span class="chip good">3 sostenidos</span> <span class="chip accent">4 en prueba</span> <span class="chip crit">1 roto</span> <span class="chip neutral">1 sin probar</span>
+            <p class="meta-line mt">Roto: "los clientes pagarán 12% de sobreprecio por entrega 48h" — evidencia de 6 clientes dice 5–7%.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Modelo operativo</h2>
+          <div class="meta-line" style="margin-bottom:8px">Madurez por capacidad — barra: actual · marca negra: objetivo (escala 1–5)</div>
+          <div class="bar-row"><span>Ventas B2B</span><div class="bar-track"><div class="bar-fill" style="width:42%"></div><div class="bar-target" style="left:70%"></div></div><span class="bar-val">2.1 → 3.5</span></div>
+          <div class="bar-row"><span>Cadena de suministro</span><div class="bar-track"><div class="bar-fill" style="width:56%"></div><div class="bar-target" style="left:70%"></div></div><span class="bar-val">2.8 → 3.5</span></div>
+          <div class="bar-row"><span>Datos y sistemas</span><div class="bar-track"><div class="bar-fill" style="width:38%"></div><div class="bar-target" style="left:60%"></div></div><span class="bar-val">1.9 → 3.0</span></div>
+          <div class="bar-row"><span>Desarrollo de producto</span><div class="bar-track"><div class="bar-fill" style="width:64%"></div><div class="bar-target" style="left:80%"></div></div><span class="bar-val">3.2 → 4.0</span></div>
+          <div class="bar-row"><span>Finanzas</span><div class="bar-track"><div class="bar-fill" style="width:50%"></div><div class="bar-target" style="left:60%"></div></div><span class="bar-val">2.5 → 3.0</span></div>
+          <div class="mt meta-line">Fuente: diagnóstico CDIO-128 (subset selección) corrido en mayo · 3 KPIs delegados desde aquí.</div>
+        </div>
+
+        <div class="card">
+          <h2>Iniciativas</h2>
+          <ul class="feed">
+            <li>Portal de pedidos B2B · $450K · Sofía M. <span class="chip good">en curso</span></li>
+            <li>Ruteo 48h Bajío · $280K · Jorge P. <span class="chip crit">en riesgo</span></li>
+            <li>Línea mezclas sin gluten · $350K · Sofía M. <span class="chip good">en curso</span></li>
+            <li>Certificación FSSC · $120K · Raúl T. <span class="chip warn">huérfana</span></li>
+            <li>CRM de ventas · $90K · Ana G. <span class="chip good">en curso</span></li>
+          </ul>
+          <div class="mt meta-line">WIP 5/5 · 4 de 5 ancladas a un choice (80%)</div>
+        </div>
+      </div>
+
+      <div class="card mt">
+        <h2>Salud de las aristas (lo que alimenta la coherencia)</h2>
+        <div class="grid cols-4">
+          <div><div class="stat"><div class="num" style="font-size:26px">80%</div><div class="lbl">iniciativas ancladas a choices</div></div></div>
+          <div><div class="stat"><div class="num" style="font-size:26px">67%</div><div class="lbl">métricas ligadas a supuestos</div></div></div>
+          <div><div class="stat"><div class="num" style="font-size:26px">44%</div><div class="lbl">supuestos bajo prueba activa</div></div></div>
+          <div><div class="stat"><div class="num" style="font-size:26px">21<span style="font-size:15px;color:var(--muted)"> días</span></div><div class="lbl">desde el último desafío a la aspiración</div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ REUNIONES ═══════════ -->
+    <section class="view" id="view-reuniones">
+      <div class="card">
+        <h2>Última reunión procesada</h2>
+        <h3>Sesión semanal de dirección — lun 14 jul, 9:00 · 52 min · 5 asistentes</h3>
+        <div class="pipeline">
+          <div class="pipe-step done"><b>✓ Transcripción</b><span>Fireflies · automática</span></div>
+          <div class="pipe-step done"><b>✓ Minuta</b><span>generada por el agente (Haiku)</span></div>
+          <div class="pipe-step done"><b>✓ 4 candidatos extraídos</b><span>2 decisiones · 1 challenge · 1 follow-up</span></div>
+          <div class="pipe-step"><b>Tu aprobación</b><span id="meet-pending-lbl">4 pendientes</span></div>
+        </div>
+        <div class="note-card">
+          <div class="fn">minuta — resumen del agente</div>
+          <p>OTIF bajó a 87% (tercera semana a la baja). Jorge atribuye el problema a la disponibilidad de flota, no al diseño de rutas. Lucía presentó el margen por SKU: las mezclas a medida rinden 9 pts más que la línea base. Se discutió congelar las 2 contrataciones de ventas hasta cerrar Q3. Sofía confirmó el hito de pagos en línea del Portal B2B para el 8 de agosto.</p>
+        </div>
+        <div class="mt" id="meet-candidates"></div>
+        <div class="empty" id="meet-empty" style="display:none">Todos los candidatos de esta reunión fueron resueltos. La minuta quedó en el decision log y en el vault.</div>
+      </div>
+
+      <div class="card mt">
+        <h2>Cadencia</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Sesión</th><th>Cuándo</th><th>Estado</th><th>Preparación del agente</th></tr></thead>
+          <tbody>
+            <tr><td>Semanal de dirección</td><td>lun 21 jul · 9:00</td><td><span class="chip accent">próxima</span></td><td>Agenda lista (4 puntos)</td></tr>
+            <tr><td>Mensual de resultados</td><td>vie 1 ago · 8:30</td><td><span class="chip neutral">programada</span></td><td>Pedirá cifras a Lucía el 29 jul</td></tr>
+            <tr><td>Trimestral estratégica</td><td>vie 26 sep</td><td><span class="chip neutral">programada</span></td><td>Reto formal a la aspiración v3</td></tr>
+            <tr><td>Semanal de dirección</td><td>lun 14 jul</td><td><span class="chip good">procesada</span></td><td>Minuta + 4 candidatos</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ═══════════ DELEGACIONES ═══════════ -->
+    <section class="view" id="view-delegaciones">
+      <div class="banner">⚠ <span><b>1 check-in vencido:</b> Raúl (TI) no ha respondido "¿Backup y recuperación probados?" — venció el 15 jul. El nudge está en tu bandeja de aprobación.</span></div>
+      <div class="card">
+        <h2>KPIs y preguntas delegadas</h2>
+        <div class="table-wrap"><table id="deleg-table">
+          <thead><tr><th>Qué</th><th>Responsable</th><th>Cadencia</th><th>Próximo</th><th>Estado</th><th>Historial (12 sem)</th></tr></thead>
+          <tbody>
+            <tr><td>KPI · OTIF % (entregas completas a tiempo)</td><td>Jorge P. — Dir. Operaciones</td><td>Semanal</td><td>vie 25 jul</td><td><span class="chip good">al día</span></td>
+              <td><span class="dots"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="miss"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="pend"></i></span></td></tr>
+            <tr><td>KPI · Margen bruto por SKU</td><td>Lucía R. — CFO</td><td>Mensual</td><td>vie 1 ago</td><td><span class="chip good">al día</span></td>
+              <td><span class="dots"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="pend"></i></span></td></tr>
+            <tr><td>Pregunta · ¿Backup y recuperación probados? <span class="meta-line">(CDIO-128 · Datos y sistemas)</span></td><td>Raúl T. — TI</td><td>Trimestral</td><td>venció 15 jul</td><td><span class="chip crit">vencido</span></td>
+              <td><span class="dots"><i class="ok"></i><i class="miss"></i></span></td></tr>
+            <tr><td>KPI · NPS clientes B2B</td><td>Ana G. — Comercial</td><td>Mensual</td><td>lun 28 jul</td><td><span class="chip warn">vence pronto</span></td>
+              <td><span class="dots"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="pend"></i></span></td></tr>
+          </tbody>
+        </table></div>
+        <div class="meta-line mt">● verde: entregado · ● rojo: falló la semana · ○ vacío: pendiente. El agente genera los check-ins, chasea vencidos (con tu aprobación) y alimenta el Challenge Loop con los misses.</div>
+
+        <form class="form-inline" id="deleg-form">
+          <input required placeholder="Qué se delega (KPI o pregunta)" id="df-what" aria-label="Qué se delega">
+          <input required placeholder="Responsable" id="df-who" aria-label="Responsable">
+          <select id="df-cad" aria-label="Cadencia"><option>Semanal</option><option>Mensual</option><option>Trimestral</option></select>
+          <button class="btn primary" type="submit">Delegar</button>
+        </form>
+      </div>
+
+      <div class="card mt">
+        <h2>De dónde salen las delegaciones — methodology packs</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Pack</th><th>Origen</th><th>Items</th><th>Delegados</th></tr></thead>
+          <tbody>
+            <tr><td>CDIO-128 · diagnóstico operativo</td><td><span class="chip neutral">built-in</span></td><td class="num">128 preguntas</td><td class="num">1</td></tr>
+            <tr><td>BDS-82 · prácticas P&L</td><td><span class="chip neutral">built-in</span></td><td class="num">82 prácticas</td><td class="num">0</td></tr>
+            <tr><td>KPIs operativos Molinos Delta</td><td><span class="chip accent">custom</span></td><td class="num">12 KPIs</td><td class="num">3</td></tr>
+          </tbody>
+        </table></div>
+        <div class="meta-line mt">Cualquier item de un pack se delega a una persona con cadencia y accountability. Los packs custom los crea el consultor o el propio CEO.</div>
+      </div>
+    </section>
+
+    <!-- ═══════════ INICIATIVAS ═══════════ -->
+    <section class="view" id="view-iniciativas">
+      <div class="banner">▸ <span><b>WIP lleno (5/5).</b> Para arrancar una iniciativa nueva, primero cierra o mata una. Esa es la regla, no una sugerencia.</span></div>
+      <div class="card">
+        <h2>Portafolio — pocas, ligadas, con dueño y con dólar</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Iniciativa</th><th>Choice ancla</th><th>Dueño</th><th class="num">Valor</th><th>OPI</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td>Portal de pedidos B2B</td><td>Canal directo digital</td><td>Sofía M.</td><td class="num">$450K</td>
+              <td><div class="bar-track" style="width:90px"><div class="bar-fill" style="width:78%"></div></div> <span class="bar-val">78</span></td>
+              <td><span class="chip good">en curso</span></td></tr>
+            <tr><td>Ruteo 48h Bajío</td><td>Entrega 48h + a medida</td><td>Jorge P.</td><td class="num">$280K</td>
+              <td><div class="bar-track" style="width:90px"><div class="bar-fill" style="width:41%"></div></div> <span class="bar-val">41</span></td>
+              <td><span class="chip crit">en riesgo</span></td></tr>
+            <tr><td>Línea mezclas sin gluten</td><td>Entrega 48h + a medida</td><td>Sofía M.</td><td class="num">$350K</td>
+              <td><div class="bar-track" style="width:90px"><div class="bar-fill" style="width:66%"></div></div> <span class="bar-val">66</span></td>
+              <td><span class="chip good">en curso</span></td></tr>
+            <tr><td>Certificación FSSC 22000</td><td><span class="chip warn">sin ancla</span></td><td>Raúl T.</td><td class="num">$120K</td>
+              <td><div class="bar-track" style="width:90px"><div class="bar-fill" style="width:55%"></div></div> <span class="bar-val">55</span></td>
+              <td><span class="chip warn">huérfana</span></td></tr>
+            <tr><td>CRM de ventas</td><td>Entrega 48h + a medida</td><td>Ana G.</td><td class="num">$90K</td>
+              <td><div class="bar-track" style="width:90px"><div class="bar-fill" style="width:71%"></div></div> <span class="bar-val">71</span></td>
+              <td><span class="chip good">en curso</span></td></tr>
+          </tbody>
+        </table></div>
+        <div class="meta-line mt">OPI: índice de prioridad (engine bds-OS, 0–100). "Huérfana" se marca, nunca se bloquea — ley loose-first. Aquí NO hay tareas ni Gantt: el avance de ejecución vive en las herramientas del cliente; aquí vive el avance <i>estratégico</i>.</div>
+      </div>
+      <div class="card mt">
+        <h2>Coaching del advisor sobre este portafolio</h2>
+        <div class="note-card">
+          <div class="fn">advisor — observación de esta semana</div>
+          <p>"Ruteo 48h" está en riesgo y es la iniciativa que sostiene tu choice principal (entrega 48h). Si el problema es flota y no rutas, el supuesto que se rompe no es logístico sino financiero: capex de flota que no está en el plan. Sugiero subirlo a challenge nivel 3 (modelo operativo) antes de la trimestral. ¿Lo preparo?</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ CAPTURA / VAULT ═══════════ -->
+    <section class="view" id="view-captura">
+      <div class="grid cols-2">
+        <div class="card">
+          <h2>Vault Obsidian → candidatos (entrada)</h2>
+          <div class="meta-line" style="margin-bottom:10px">El CEO piensa en notas sueltas. El agente las lee del vault, propone estructura y TÚ apruebas. Nada entra solo.</div>
+          <div class="note-card">
+            <div class="fn">00-inbox/nota-2026-07-16-madrugada.md</div>
+            <p>"…si el portal jala, ¿por qué no venderle también a restaurantes de hotel? mismo producto, otro canal, nadie los atiende bien en la región…"</p>
+            <div class="mt"><span class="kind">Possibility detectada</span> <span class="chip accent">propuesta como "Canal HoReCa hoteles"</span></div>
+          </div>
+          <div class="note-card mt">
+            <div class="fn">00-inbox/despues-de-llamada-proveedor.md</div>
+            <p>"…el proveedor de trigo especial sube 8% en septiembre. Checar si el supuesto de margen de mezclas aguanta…"</p>
+            <div class="mt"><span class="kind">Evidencia de supuesto</span> <span class="chip warn">liga a: "margen de mezclas ≥ 32%"</span></div>
+          </div>
+          <div class="meta-line mt">2 candidatos esperando en la bandeja del Cockpit tras aprobar esta vista.</div>
+        </div>
+        <div class="card">
+          <h2>BOS → vault (salida)</h2>
+          <div class="meta-line" style="margin-bottom:10px">El sistema publica de vuelta al vault en Markdown — el CEO lee donde ya vive.</div>
+          <ul class="feed">
+            <li><time>lun</time>published/readout-semanal-2026-07-14.md — minuta + decisiones + coherencia</li>
+            <li><time>lun</time>published/triangulo-estado.md — snapshot del triángulo (auto)</li>
+            <li><time>vie</time>published/delegaciones-semana-28.md — check-ins de la semana</li>
+            <li><time>jul 1</time>published/readout-mensual-junio.md — board one-pager</li>
+          </ul>
+          <div class="mt">
+            <h3>Reglas del puente</h3>
+            <ul class="feed">
+              <li>El vault es <b>loose-first por naturaleza</b>: una nota suelta es válida; la estructura se propone, no se exige.</li>
+              <li>Escritura a BOS <b>solo</b> vía <code style="font-size:12px">agent_runs.awaiting_approval</code>.</li>
+              <li>El agente local (Hermes o Claude Code) corre las mismas skills — un solo skill-set, dos hosts.</li>
+              <li>Un vault por workspace. Nunca se mezclan clientes.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="fict">Dummy navegable · todos los datos son ficticios — "Molinos Delta, S.A. de C.V." y todas las personas mencionadas son invenciones para diseño de producto. BDS — Business Design Shop.</div>
+  </main>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  // ── tema ──
+  const root = document.documentElement;
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    root.dataset.theme = cur === 'dark' ? 'light' : 'dark';
+  });
+
+  // ── navegación ──
+  const titles = {
+    cockpit: ['Cockpit — lunes 21 jul', 'Todo lo que requiere tu criterio hoy, en una pantalla.'],
+    triangulo: ['El Triángulo', 'Estrategia · Modelo operativo · Iniciativas — y la salud de sus aristas.'],
+    reuniones: ['Reuniones y cadencia', 'De la transcripción a la decisión, con tu aprobación en medio.'],
+    delegaciones: ['Delegaciones', 'Cada KPI y pregunta del modelo operativo tiene un responsable y una cadencia.'],
+    iniciativas: ['Portafolio de iniciativas', 'Pocas, con dueño, con dólar, ancladas a un choice.'],
+    captura: ['Captura — vault Obsidian', 'Donde el CEO piensa. El agente estructura; tú apruebas.']
+  };
+  document.querySelectorAll('nav.side button.nav').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('nav.side button.nav').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('section.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-' + btn.dataset.view).classList.add('active');
+      const [t, s] = titles[btn.dataset.view];
+      document.getElementById('view-title').textContent = t;
+      document.getElementById('view-sub').textContent = s;
+      window.scrollTo({ top: 0 });
+    });
+  });
+
+  // ── toast ──
+  let toastTimer;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+  }
+
+  // ── bandeja de aprobación ──
+  const approvals = [
+    { id: 'a1', kind: 'Nudge', title: 'Recordatorio a Raúl T. — check-in vencido (backup y recuperación)',
+      src: 'Generado por el agente · delegación trimestral · venció 15 jul',
+      draft: '"Raúl, buen día. Quedó pendiente tu check-in trimestral sobre pruebas de backup y recuperación (venció el 15). ¿Me lo mandas hoy? Es insumo de la trimestral estratégica. — enviado en nombre de dirección"',
+      ok: 'Nudge aprobado — se envía por correo a Raúl y queda registrado.', meeting: false },
+    { id: 'a2', kind: 'Decisión', title: 'Congelar las 2 contrataciones de ventas hasta cerrar Q3',
+      src: 'Extraída de: Sesión semanal de dirección · 14 jul · min 31',
+      draft: 'Racional detectado: preservar caja ante capex posible de flota; revisar al cierre de Q3 con el margen por SKU de Lucía.',
+      ok: 'Decisión registrada en el decision log con racional y alternativas.', meeting: true },
+    { id: 'a3', kind: 'Challenge', title: 'OTIF cae 3 semanas seguidas → ¿falla la iniciativa "Ruteo 48h" o el supuesto de flota?',
+      src: 'Challenge nivel 2 (iniciativa) · propuesto por el Challenge Loop',
+      draft: 'Si Jorge tiene razón y es flota, el problema escala a nivel 3 (modelo operativo): capex no planeado. Propuesto como punto 1 de la agenda del lunes.',
+      ok: 'Challenge aceptado — abierto y agendado para la sesión del lunes.', meeting: true },
+    { id: 'a4', kind: 'Publicación', title: 'Publicar readout semanal al vault del CEO',
+      src: 'published/readout-semanal-2026-07-21.md · minuta + decisiones + coherencia 68',
+      draft: null,
+      ok: 'Readout publicado al vault en Markdown.', meeting: false },
+    { id: 'a5', kind: 'Possibility', title: 'Nueva possibility desde el vault: "Canal HoReCa hoteles"',
+      src: 'Detectada en 00-inbox/nota-2026-07-16-madrugada.md',
+      draft: '"Mismo producto, otro canal, nadie los atiende bien en la región" → se crea como possibility en estado propuesta, junto a las 2 existentes.',
+      ok: 'Possibility creada — la verás en Estrategia para comparar contra las rivales.', meeting: false, hidden: true },
+    { id: 'a6', kind: 'Follow-up', title: 'Confirmar con Sofía el hito de pagos en línea (8 ago)',
+      src: 'Extraído de: Sesión semanal · 14 jul · compromiso verbal',
+      draft: '"Sofía, ¿confirmas que el hito de pagos en línea del Portal B2B sigue en pie para el 8 de agosto? Para reflejarlo en el portafolio."',
+      ok: 'Follow-up aprobado — se envía y queda ligado a la iniciativa Portal B2B.', meeting: true, hidden: true }
+  ];
+
+  let pending = approvals.filter(a => !a.hidden);
+  const meetPending = () => pending.filter(a => a.meeting).length + approvals.filter(a => a.hidden && a.meeting).length;
+
+  function renderApprovals() {
+    const list = document.getElementById('approval-list');
+    list.innerHTML = '';
+    pending.forEach(a => {
+      const div = document.createElement('div');
+      div.className = 'approval';
+      div.innerHTML = '<div class="body"><span class="kind">' + a.kind + '</span>' +
+        '<p>' + a.title + '</p><div class="src">' + a.src + '</div>' +
+        (a.draft ? '<div class="draft">' + a.draft + '</div>' : '') + '</div>' +
+        '<div class="btn-row"><button class="btn primary">Aprobar</button><button class="btn subtle">Rechazar</button></div>';
+      const [ok, no] = div.querySelectorAll('button');
+      ok.addEventListener('click', () => resolve(a, true));
+      no.addEventListener('click', () => resolve(a, false));
+      list.appendChild(div);
+    });
+    const n = pending.length;
+    document.getElementById('approvals-left').textContent = n;
+    const cnt = document.getElementById('cnt-approvals');
+    cnt.textContent = n; cnt.classList.toggle('zero', n === 0);
+    document.getElementById('approvals-empty').style.display = n ? 'none' : 'block';
+    renderMeetingCandidates();
+  }
+
+  function resolve(a, approved) {
+    pending = pending.filter(x => x.id !== a.id);
+    toast(approved ? a.ok : 'Rechazado — el agente lo descarta y aprende del criterio.');
+    if (a.id === 'a1' && approved) {
+      document.getElementById('checkin-chip').textContent = 'nudge enviado a Raúl';
+      document.getElementById('checkin-chip').className = 'chip warn';
+      const dc = document.getElementById('cnt-deleg'); dc.textContent = ''; dc.classList.add('zero');
+    }
+    renderApprovals();
+  }
+
+  // ── candidatos de la reunión (misma bandeja, vista filtrada) ──
+  function renderMeetingCandidates() {
+    const box = document.getElementById('meet-candidates');
+    const items = pending.filter(a => a.meeting);
+    box.innerHTML = '';
+    items.forEach(a => {
+      const div = document.createElement('div');
+      div.className = 'approval';
+      div.innerHTML = '<div class="body"><span class="kind">' + a.kind + '</span>' +
+        '<p>' + a.title + '</p><div class="src">' + a.src + '</div></div>' +
+        '<div class="btn-row"><button class="btn primary">Aprobar</button><button class="btn subtle">Rechazar</button></div>';
+      const [ok, no] = div.querySelectorAll('button');
+      ok.addEventListener('click', () => resolve(a, true));
+      no.addEventListener('click', () => resolve(a, false));
+      box.appendChild(div);
+    });
+    const n = items.length;
+    const mc = document.getElementById('cnt-meet');
+    mc.textContent = n; mc.classList.toggle('zero', n === 0);
+    document.getElementById('meet-pending-lbl').textContent = n ? n + ' pendientes' : 'resueltos';
+    document.getElementById('meet-empty').style.display = n ? 'none' : 'block';
+  }
+
+  // ── nueva delegación ──
+  document.getElementById('deleg-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const what = document.getElementById('df-what').value.trim();
+    const who = document.getElementById('df-who').value.trim();
+    const cad = document.getElementById('df-cad').value;
+    if (!what || !who) return;
+    const tb = document.querySelector('#deleg-table tbody');
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + what + '</td><td>' + who + '</td><td>' + cad + '</td><td>próxima semana</td>' +
+      '<td><span class="chip accent">nueva</span></td><td><span class="dots"><i class="pend"></i></span></td>';
+    tb.appendChild(tr);
+    e.target.reset();
+    toast('Delegado a ' + who + ' (' + cad.toLowerCase() + ') — el agente generará el primer check-in.');
+  });
+
+  renderApprovals();
+</script>
