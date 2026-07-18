@@ -4,7 +4,7 @@
     --wb-gunmetal:#222831; --wb-carbon:#1A1E25; --wb-panel:#2C333E;
     --wb-accent:#FD4002; --wb-accent-700:#D63601;
     --wb-white:#FFFFFF; --wb-body:#B8C0CC; --wb-body-soft:#C2C9D4;
-    --wb-gray:#98A0AD; --wb-muted:#6B7480; --wb-line:rgba(255,255,255,.09);
+    --wb-gray:#98A0AD; --wb-muted:#7E8794; --wb-line:rgba(255,255,255,.09);
     --good:#66B37E; --good-soft:rgba(102,179,126,.13);
     --warn:#D0A24A; --warn-soft:rgba(208,162,74,.13);
     --crit:#DD7A6D; --crit-soft:rgba(221,122,109,.13);
@@ -16,7 +16,7 @@
   /* tema claro — variación #F4F5F7 del brand system */
   body.light { --wb-gunmetal:#F4F5F7; --wb-carbon:#FFFFFF; --wb-panel:#FFFFFF;
     --wb-white:#1A1E25; --wb-body:#4A5560; --wb-body-soft:#3E4650; --wb-gray:#6B7480;
-    --wb-muted:#98A0AD; --wb-line:rgba(26,30,37,.11);
+    --wb-muted:#7A828F; --wb-line:rgba(26,30,37,.11);
     --good:#2E7D46; --good-soft:rgba(46,125,70,.12); --warn:#8A6410; --warn-soft:rgba(176,124,16,.13); --crit:#A93327; --crit-soft:rgba(169,51,39,.12); }
   body.light main::after { opacity:.05; color:#222831; }
   /* texto sobre naranja siempre blanco, en ambos temas */
@@ -140,6 +140,49 @@
   .sugg button { border:1px solid var(--wb-line); background:none; color:var(--wb-gray); border-radius:99px;
     padding:4px 11px; font:600 11px var(--font-body); cursor:pointer; }
   .sugg button:hover { border-color:var(--wb-accent); color:var(--wb-accent); }
+
+  /* nav: badge NUMÉRICO = pendientes-de-ti · PUNTO de color = señal viva (información, no acción) */
+  .sigdot { margin-left:auto; width:8px; height:8px; border-radius:99px; flex-shrink:0; }
+  .sigdot.crit{background:var(--crit);} .sigdot.warn{background:var(--warn);}
+
+  /* panel de detalle — ninguna aprobación se ejecuta sin poder inspeccionarla */
+  #ovl { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:11; display:none; border:0; padding:0; width:100%; }
+  #ovl.open { display:block; }
+  .detail { position:fixed; right:0; top:0; bottom:0; width:min(460px,100vw); background:var(--wb-carbon);
+    border-left:1px solid var(--wb-line); z-index:12; display:none; flex-direction:column; }
+  .detail.open { display:flex; }
+  .detail header { padding:16px 18px; border-bottom:1px solid var(--wb-line); display:flex; gap:10px; align-items:center; }
+  .detail header b { font:800 15px var(--font-head); color:var(--wb-white); flex:1; }
+  .detail .body { flex:1; overflow-y:auto; padding:16px 18px; font-size:13px; color:var(--wb-body-soft); }
+  .detail .body h5 { font:700 10px var(--font-body); letter-spacing:1.4px; text-transform:uppercase; color:var(--wb-gray); margin:14px 0 6px; }
+  .detail .body h5:first-child { margin-top:0; }
+  .detail .foot { display:flex; gap:8px; padding:14px 18px; border-top:1px solid var(--wb-line); }
+  .prev { background:var(--wb-gunmetal); border:1px solid var(--wb-line); border-radius:10px; padding:11px 13px; font-size:12.5px; color:var(--wb-body-soft); }
+  .rule { font-family:ui-monospace,Consolas,monospace; font-size:11.5px; background:var(--wb-gunmetal); border:1px solid var(--wb-line); border-radius:8px; padding:8px 11px; color:var(--wb-body-soft); overflow-x:auto; }
+  .row.link { cursor:pointer; } .row.link:hover .t b { color:var(--wb-accent); }
+
+  /* cifra generada por agente = SIEMPRE etiquetada estimación, con banda y supuestos */
+  .est { display:inline-flex; align-items:center; gap:4px; font:700 9.5px var(--font-body); letter-spacing:.8px; text-transform:uppercase;
+    color:var(--warn); background:var(--warn-soft); border-radius:4px; padding:1px 6px; vertical-align:middle; white-space:nowrap; }
+
+  /* toast con deshacer (30 s en producto; 8 s en el dummy) */
+  #toast { pointer-events:auto; display:flex; align-items:center; }
+  #toast button { border:0; background:rgba(255,255,255,.22); color:#fff; border-radius:7px; padding:4px 10px; margin-left:12px; font:700 12px var(--font-body); cursor:pointer; }
+
+  /* día cero: esqueletos honestos, no datos fingidos */
+  .skel { height:10px; border-radius:6px; background:linear-gradient(90deg,rgba(128,136,148,.15),rgba(128,136,148,.3),rgba(128,136,148,.15)); margin:7px 0; }
+
+  /* pasada móvil — el flujo "CEO aprueba desde el teléfono" es de primera clase */
+  @media (max-width:640px){
+    .btn { min-height:42px; padding:10px 16px; }
+    .row { flex-wrap:wrap; row-gap:5px; align-items:center; }
+    .roles button { padding:10px 12px; }
+    header.top h1 { font-size:19px; }
+    .kanb { grid-template-columns:1fr; }
+    main::after { display:none; }
+    .fab { right:16px; bottom:18px; }
+    #toast { max-width:92vw; left:4vw; transform:none; }
+  }
 </style>
 
 <div class="layout">
@@ -148,25 +191,29 @@
     <div class="ws"><b>Molinos Delta, S.A.</b><span>$18M ventas · 140 personas · semana 29</span></div>
     <button class="nav active" data-v="inicio">◈ <span class="lb" data-en="Home">Inicio</span> <span class="cnt">3</span></button>
     <div class="navgroup"><span class="lb" data-en="Daily operations">Operación diaria</span></div>
-    <button class="nav" data-v="reuniones">◉ <span class="lb" data-en="Meetings">Reuniones</span> <span class="cnt">4</span></button>
+    <button class="nav" data-v="reuniones">◉ <span class="lb" data-en="Meetings">Reuniones</span></button>
     <button class="nav" data-v="tableros">▦ <span class="lb" data-en="Dashboards & KPIs">Tableros & KPIs</span></button>
     <button class="nav" data-v="procesos">≡ <span class="lb" data-en="Processes">Procesos</span></button>
     <button class="nav" data-v="conocimiento">✎ <span class="lb" data-en="Knowledge">Conocimiento</span></button>
     <div class="navgroup"><span class="lb" data-en="Operating model">Modelo operativo</span></div>
     <button class="nav sub" data-a="fin"><span class="lb" data-en="Finance & unit economics">Finanzas & unit economics</span></button>
-    <button class="nav sub" data-a="gtm"><span class="lb" data-en="Go-to-market & sales">Go-to-market & ventas</span> <span class="cnt" style="background:var(--warn)">!</span></button>
+    <button class="nav sub" data-a="gtm"><span class="lb" data-en="Go-to-market & sales">Go-to-market & ventas</span> <span class="sigdot warn" title="Señal 02 viva en esta área"></span></button>
     <button class="nav sub" data-a="mkt"><span class="lb" data-en="Marketing & brand">Marketing & marca</span></button>
     <button class="nav sub" data-a="prod"><span class="lb" data-en="Product & offering">Producto & oferta</span></button>
-    <button class="nav sub" data-a="ops"><span class="lb" data-en="Delivery & operations">Delivery & operaciones</span> <span class="cnt">S1</span></button>
+    <button class="nav sub" data-a="ops"><span class="lb" data-en="Delivery & operations">Delivery & operaciones</span> <span class="sigdot crit" title="Señal 01 viva en esta área"></span></button>
     <button class="nav sub" data-a="tech"><span class="lb" data-en="Technology & infrastructure">Tecnología & infraestructura</span></button>
     <button class="nav sub" data-a="gob"><span class="lb" data-en="Governance & leadership">Gobierno & liderazgo</span></button>
     <div class="navgroup"><span class="lb" data-en="People">Gente</span></div>
-    <button class="nav" data-v="personas">⬡ <span class="lb" data-en="People & organization">Personas & organización</span> <span class="cnt">S3</span></button>
+    <button class="nav" data-v="personas">⬡ <span class="lb" data-en="People & organization">Personas & organización</span> <span class="sigdot crit" title="Señal 03 viva en esta área"></span></button>
     <div class="navgroup"><span class="lb" data-en="Strategy">Estrategia</span></div>
     <button class="nav" data-v="estrategia">△ Play to Win</button>
     <button class="nav" data-v="okrs">◎ OKRs</button>
     <button class="nav" data-v="iniciativas">▸ <span class="lb" data-en="Initiatives">Iniciativas</span></button>
-    <div class="side-foot"><span class="dot"></span>Agentes activos · último batch 06:00<br>47 métricas vigiladas · 6 conectores</div>
+    <div class="navgroup"><span class="lb" data-en="System">Sistema</span></div>
+    <button class="nav" data-v="conectores">⛁ <span class="lb" data-en="Connectors & data">Conectores & datos</span> <span class="sigdot warn" title="1 conector caído"></span></button>
+    <button class="nav" data-v="admin">⚙ <span class="lb" data-en="Organization & seats">Organización & seats</span></button>
+    <button class="nav" data-v="diazero">◌ <span class="lb" data-en="Day zero (demo)">Día cero (demo)</span></button>
+    <div class="side-foot"><span class="dot"></span>Agentes activos · último batch 06:00<br>47 métricas vigiladas · 6 de 7 conectores sanos</div>
   </nav>
 
   <main>
@@ -176,7 +223,7 @@
         <button class="on" data-r="ceo"><span class="lb" data-en="Owner / CEO">Dueño / CEO</span></button><button data-r="dir">Director</button><button data-r="mgr">Manager</button>
       </div>
       <div class="roles" aria-label="Preferencias">
-        <button id="tog-lang" title="Cambiar idioma">EN</button><button id="tog-theme" title="Tema claro/oscuro">◐</button>
+        <button id="tog-theme" title="Tema claro/oscuro">◐</button>
       </div>
     </header>
 
@@ -185,7 +232,7 @@
       <div class="card" style="border-left:4px solid var(--wb-accent); margin-bottom:13px">
         <h2>Hoy, para ti <em id="role-name">· dueño / ceo</em></h2>
         <div id="role-ceo">
-          <div class="row"><span class="t"><b>3 señales</b> destiladas de 47 métricas — entrega, caja y gente. Una causa raíz común entre 01 y 03.</span><span class="chip crit">decidir</span></div>
+          <div class="row link" onclick="openDetail('senal01')"><span class="t"><b>3 señales</b> de 47 métricas — entrega, caja y gente. Disparadas por regla (umbral + tendencia + supuesto ligado); el agente solo redacta el "y esto qué implica". Toca una para ver su regla.</span><span class="chip crit">decidir</span></div>
           <div class="row"><span class="t"><b>Sesión 9:00</b> — agenda lista: renta de flota es el punto 1, con propuesta cotizada de Jorge.</span><span class="chip acc">preparada</span></div>
           <div class="row"><span class="t"><b>3 aprobaciones</b> en bandeja: challenge N3, nudge, readout al vault.</span><span class="chip warn">2 min</span></div>
         </div>
@@ -200,18 +247,14 @@
           <div class="row"><span class="t"><b>Proceso a tu cargo</b>: "Control de calidad recepción" sube a madurez 3 si documentas el paso 4.</span><span class="chip mut">sugerencia</span></div>
         </div>
       </div>
-      <div class="grid c4">
-        <div class="card"><div class="num hot">3</div><div class="lbl">señales esta semana (de 47 métricas)</div></div>
-        <div class="card"><div class="num">66</div><div class="lbl">coherencia estratégica · ▾2 explicado</div></div>
-        <div class="card"><div class="num">5<small>/5</small></div><div class="lbl">iniciativas WIP · 1 en riesgo</div></div>
-        <div class="card"><div class="num">11<small>/14</small></div><div class="lbl">check-ins del equipo al día</div></div>
-      </div>
+      <div class="grid c4" id="kpi-strip"><!-- se llena desde STATE — única fuente --></div>
       <div class="grid c2 mt">
         <div class="card">
-          <h2>Requiere tu criterio</h2>
-          <div class="row"><span class="t"><b>Challenge N3</b> — capex de flota no planeado (Señales 01+03)</span><button class="btn p" onclick="toast('Challenge aceptado — agendado 9:00')">Aprobar</button></div>
-          <div class="row"><span class="t"><b>Nudge a Raúl</b> — check-in de backup vencido</span><button class="btn p" onclick="toast('Nudge enviado a Raúl')">Aprobar</button></div>
-          <div class="row"><span class="t"><b>Readout semanal</b> → vault + Notion</span><button class="btn p" onclick="toast('Publicado al vault')">Aprobar</button></div>
+          <h2>Requiere tu criterio <em>· toca para inspeccionar antes de aprobar</em></h2>
+          <div class="row link" onclick="openDetail('challenge')"><span class="t"><b>Challenge N3</b> — capex de flota no planeado (Señales 01+03)</span><span class="chip acc">ver detalle</span></div>
+          <div class="row link" onclick="openDetail('nudge')"><span class="t"><b>Nudge a Raúl</b> — check-in de backup vencido</span><span class="chip acc">ver detalle</span></div>
+          <div class="row link" onclick="openDetail('readout')"><span class="t"><b>Readout semanal</b> → vault + Notion</span><span class="chip acc">ver detalle</span></div>
+          <p class="note mt">Toda aprobación abre su panel: qué hará el agente, con qué texto, y con qué fuentes. Al aprobar hay 30 s para deshacer.</p>
         </div>
         <div class="card">
           <h2>Actividad de los agentes — anoche</h2>
@@ -221,7 +264,7 @@
           <div class="row"><span class="t">Agenda de sesión + minuta pendiente de la anterior</span><span class="m">06:10 · $0.04</span></div>
         </div>
       </div>
-      <div class="spec"><b>Spec · hacia atrás</b>Esta pantalla exige: signals engine (destilación 47→3), bandeja `agent_runs.awaiting_approval`, vista por rol (RLS + role), ledger de costo visible.</div>
+      <div class="spec"><b>Spec · hacia atrás</b>Esta pantalla exige: signals engine DETERMINISTA (regla umbral+tendencia+ligadura a supuesto dispara; el LLM solo redacta el "so what"; causa raíz siempre como hipótesis con confianza), bandeja `agent_runs.awaiting_approval` con panel de detalle + undo 30 s, vista por rol (RLS + role), ledger de costo visible. i18n ES/EN vía diccionario de strings — spec, no toggle decorativo.</div>
     </section>
 
     <!-- ═══ REUNIONES ═══ -->
@@ -244,7 +287,7 @@
       </div>
       <div class="card mt">
         <h2>Agenda de hoy 9:00 — preparada por el agente <em>· cada punto trae su origen</em></h2>
-        <div class="row"><span class="t"><b>1 · Renta de flota: aprobar o rechazar</b> — propuesta cotizada de Jorge ($18K/mes) + análisis del advisor con 3 escenarios anexado</span><span class="chip crit">Señales 01+03</span></div>
+        <div class="row"><span class="t"><b>1 · Renta de flota: aprobar o rechazar</b> — propuesta cotizada de Jorge ($18K/mes, cifra real) + análisis del advisor con 3 escenarios <span class="est">estimación · bandas + supuestos anexos</span></span><span class="chip crit">Señales 01+03</span></div>
         <div class="row"><span class="t"><b>2 · Preview política de crédito canal directo</b> — Lucía trae 2 escenarios (con/sin anticipo 30%); decisión formal el viernes</span><span class="chip warn">Señal 02</span></div>
         <div class="row"><span class="t"><b>3 · Check-in mensual: margen por SKU</b> — entregado por Lucía; mezclas a medida +9 pts confirma supuesto</span><span class="chip good">OKR O3</span></div>
         <div class="row"><span class="t"><b>4 · Portal B2B: hito de pagos movido +2 sem</b> — Sofía confirma si es dependencia técnica o de proveedor</span><span class="chip mut">Jira · OKR O2</span></div>
@@ -312,20 +355,19 @@
       </div>
       <p class="note mt">Excepción sobre ruido: área con señal habla, área en plan se atenúa. Cada cifra trae fuente y timestamp (Odoo · CRM · nómina · Jira, 06:00).</p>
       <div class="card mt" style="border:1.5px dashed rgba(253,64,2,.45)">
-        <h2>Analista — pide el tablero que necesitas <em>· estilo Julius, embebido</em></h2>
-        <div class="chat" style="position:static;display:block;border:0;background:none;width:auto">
-          <div class="inp" style="padding:0 0 10px"><input placeholder="Ej. margen por cliente top-10, últimos 6 meses, contra costo de servir…" aria-label="Describe el tablero"><button class="btn p">Generar</button></div>
-        </div>
+        <h2>Analista v1 — catálogo curado de métricas <em>· compón, no improvises</em></h2>
         <div class="sugg" style="padding:0 0 10px">
-          <button onclick="toast('dummy: generaría el tablero desde metric_points + Odoo')">OTIF por ruta vs. costo de flete</button>
-          <button onclick="toast('dummy')">Cohortes de clientes del portal por mes</button>
-          <button onclick="toast('dummy')">Margen por SKU: a medida vs. línea base</button>
-          <button onclick="toast('dummy')">DSO por cliente top-20</button>
+          <button onclick="toast('v1: compone la vista desde el catálogo gobernado (metric_points)')">OTIF por ruta vs. costo de flete</button>
+          <button onclick="toast('v1: catálogo')">Cohortes de clientes del portal por mes</button>
+          <button onclick="toast('v1: catálogo')">Margen por SKU: a medida vs. línea base</button>
+          <button onclick="toast('v1: catálogo')">DSO por cliente top-20</button>
+          <button onclick="toast('v1: catálogo')">+ 30 vistas más del catálogo, filtrables por área</button>
         </div>
         <div class="row"><span class="t"><b>Vistas guardadas del equipo</b> · "Margen por cliente" (Lucía, anclada a Finanzas) · "OTIF por ruta" (Jorge, anclada a Operaciones — hoy alimenta la Señal 01)</span><span class="chip acc">ancladas</span></div>
-        <p class="note mt">El analista genera la gráfica correcta desde los datos conectados, explica qué hizo, y la vista se puede ANCLAR a su área — donde el agente la empieza a vigilar. Exploración libre, gobierno intacto: mismas fuentes, mismo RLS, costo medido en @bos/ai.</p>
+        <div class="row"><span class="t" style="opacity:.55"><b>v2 (spec, no construido):</b> prompt libre estilo Julius sobre el mismo catálogo. Nunca SQL directo del LLM a los datos — el analista solo compone métricas ya gobernadas.</span><span class="chip mut">v2</span></div>
+        <p class="note mt">v1 es un catálogo curado: cada vista tiene definición ratificada, fuente y dueño. La exploración crece por curaduría, no por SQL generativo. Anclar una vista a su área = el agente la empieza a vigilar. Mismas fuentes, mismo RLS, costo medido en @bos/ai.</p>
       </div>
-      <div class="spec"><b>Spec</b>`metric_points` con procedencia + umbrales + puente EBITDA + `saved_views` (prompt→spec de gráfica, dueño, área ancla). El analista corre por @bos/ai (Sonnet) con acceso solo-lectura a conectores.</div>
+      <div class="spec"><b>Spec</b>`metric_points` con procedencia + umbrales + puente EBITDA + `saved_views` (spec de gráfica declarativa, dueño, área ancla). v1: composición sobre catálogo curado; v2: prompt→spec validada. El LLM jamás emite SQL contra los conectores.</div>
     </section>
 
     <!-- ═══ OKRS ═══ -->
@@ -396,7 +438,14 @@
         <div class="row"><span class="t"><b>+9 managers</b> con delegaciones activas</span><span class="chip good">9/9 al día</span><span class="m">portal seats</span></div>
       </div>
       <p class="note mt">People al centro del triángulo: son quienes responden assessments, reciben delegaciones, explican variaciones y mejoran procesos. El coach de cada uno conoce su historial — meses de contexto que ningún reporte tiene.</p>
-      <div class="spec"><b>Spec</b>`people` (por workspace, ligera), `delegations`+`checkins`, coach por persona (agente + canal preferido), portal seats. Privacidad: el coach de Jorge habla con Jorge; el CEO ve estados, no conversaciones.</div>
+      <div class="card mt">
+        <h2>Privacidad del coach — 3 clases de dato <em>· el contrato que hace posible la confianza</em></h2>
+        <div class="row"><span class="t"><b>Estado</b> — check-in entregado/vencido, KPI al día, racha</span><span class="chip good">visible al CEO y al equipo</span></div>
+        <div class="row"><span class="t"><b>Contenido</b> — lo que la persona escribe o dicta a su coach</span><span class="chip crit">🔒 solo la persona</span></div>
+        <div class="row"><span class="t"><b>Consejo</b> — lo que el coach le recomienda</span><span class="chip crit">🔒 solo la persona</span></div>
+        <p class="note mt">El CEO ve el semáforo, nunca la conversación. Si el coach fuera un canal de vigilancia, nadie le contaría la verdad — y sin verdad no hay coach. Agregados anónimos (ej. "el equipo reporta fricción en delegaciones") solo con umbral de n≥5 y opt-in del workspace.</p>
+      </div>
+      <div class="spec"><b>Spec</b>`people` (por workspace, ligera), `delegations`+`checkins`, coach por persona (agente + canal preferido). Clases de dato en el schema: `checkins.status` (org-visible) vs `coach_messages` (RLS a la persona, ni el owner del org las lee). Seats y roles viven en Organización & seats.</div>
     </section>
 
     <!-- ═══ ESTRATEGIA (P2W) ═══ -->
@@ -461,7 +510,74 @@
       <div class="spec"><b>Spec</b>Página de área = vista filtrada de: metric_points + prácticas y PREGUNTAS del pack (con rúbrica) + delegations + señales. Un template, 8 instancias.</div>
     </section>
 
-    <div class="fict">Wireframe UX/UI — dummy de spec con datos 100% ficticios ("Molinos Delta"). Brand System Wadi Bardawil · BDS — Business Design Shop. Nada construido aún.</div>
+    <!-- ═══ CONECTORES & DATOS ═══ -->
+    <section class="view" id="v-conectores">
+      <div class="card" style="border-left:4px solid var(--warn); margin-bottom:13px">
+        <h2>1 conector caído — modo degradado explícito</h2>
+        <div class="row"><span class="t"><b>Feed bancario (CSV automático)</b> — token vencido hace 2 días. 3 métricas de caja congeladas al 15 jul. Las señales que dependen de ellas se marcan "con datos viejos" — <b>nunca se calculan con datos inventados ni extrapolados en silencio</b>.</span><span class="chip crit">caído</span></div>
+        <div class="row"><span class="t">Mientras se reconecta: el agente de finanzas dejó de emitir juicios de caja y lo dice en su firma. Runway muestra "al 15 jul".</span><button class="btn p" onclick="toast('dummy: reautenticar feed bancario')">Reconectar</button><button class="btn g" onclick="toast('dummy: subir plantilla CSV de caja')">Subir CSV puente</button></div>
+      </div>
+      <div class="grid c2">
+        <div class="card">
+          <h2>Conectores sanos</h2>
+          <div class="row"><span class="t"><b>Odoo (ERP)</b> · 31 métricas · sync 06:00</span><span class="chip good">sano</span></div>
+          <div class="row"><span class="t"><b>GoHighLevel (CRM)</b> · 9 métricas · sync 06:00</span><span class="chip good">sano</span></div>
+          <div class="row"><span class="t"><b>Fireflies</b> · minutas de dirección</span><span class="chip good">sano</span></div>
+          <div class="row"><span class="t"><b>Jira</b> · % avance de iniciativas · solo lectura</span><span class="chip good">sano</span></div>
+          <div class="row"><span class="t"><b>Notion + Drive</b> · conocimiento · lectura + RAG</span><span class="chip good">sano</span></div>
+          <div class="row"><span class="t"><b>Vault Obsidian</b> · bidireccional con aprobación</span><span class="chip good">sano</span></div>
+        </div>
+        <div class="card">
+          <h2>Plantillas CSV — el fallback sin ERP limpio</h2>
+          <div class="row"><span class="t"><b>Caja semanal</b> · 6 columnas · la llena Lucía en 10 min</span><span class="chip mut">plantilla</span></div>
+          <div class="row"><span class="t"><b>Ventas por SKU</b> · mensual</span><span class="chip mut">plantilla</span></div>
+          <div class="row"><span class="t"><b>Nómina y rotación</b> · mensual</span><span class="chip mut">plantilla</span></div>
+          <p class="note mt">Una empresa de $1–10M sin ERP confiable arranca con 3 plantillas CSV y las mismas señales. El conector "de verdad" llega cuando llega — el loop no lo espera.</p>
+        </div>
+      </div>
+      <div class="spec"><b>Spec</b>`connections` (tipo, credencial, salud, last_sync) + `metric_sources` (métrica→conector/csv, freshness). Health-check por sync; señal con fuente vieja hereda el estado "stale" visible. Degradación explícita, jamás silenciosa.</div>
+    </section>
+
+    <!-- ═══ ORGANIZACIÓN & SEATS ═══ -->
+    <section class="view" id="v-admin">
+      <div class="grid c2">
+        <div class="card">
+          <h2>Plan de la organización <em>· precio por empresa, no por asiento</em></h2>
+          <div class="row"><span class="t"><b>Molinos Delta, S.A.</b> · plan Empresa</span><span class="chip acc">activo</span></div>
+          <div class="row"><span class="t">Ejecutivos con coach + aprobaciones</span><span class="m">6 personas</span></div>
+          <div class="row"><span class="t">Frontline — lectura + sus propias métricas y check-ins</span><span class="m">9 personas · gratis</span></div>
+          <div class="row"><span class="t">Uso de AI del mes (cap $300, ajustable)</span><span class="m">$41.20 / $300</span></div>
+          <p class="note mt">El precio ancla contra el fractional COO ($5–18K/mes), no contra SaaS por asiento. Agregar gente frontline nunca cuesta — la adopción de abajo hacia arriba es el foso, no la factura.</p>
+        </div>
+        <div class="card">
+          <h2>Personas & roles</h2>
+          <div class="row"><span class="t"><b>Marcela D.</b> · CEO</span><span class="chip acc">owner</span><span class="m">aprobaciones + todo</span></div>
+          <div class="row"><span class="t"><b>Jorge, Lucía, Ana, Sofía, Paola, Raúl</b></span><span class="chip mut">executive</span><span class="m">su área + coach</span></div>
+          <div class="row"><span class="t"><b>9 managers</b></span><span class="chip mut">frontline</span><span class="m">lectura + check-ins propios</span></div>
+          <div class="row"><span class="t"><b>Wadi B.</b> · consultor externo</span><span class="chip warn">advisor seat</span><span class="m">multi-workspace</span></div>
+          <div class="row"><span class="t">Invitación pendiente: <b>gerente de calidad</b></span><button class="btn g" onclick="toast('dummy: reenviar invitación')">Reenviar</button></div>
+        </div>
+      </div>
+      <div class="spec"><b>Spec</b>`memberships.role` ya contempla owner/consultant/executive/contributor/viewer. Stripe: suscripción por org + metered usage con cap configurable. El seat del consultor cruza workspaces (segmento 1).</div>
+    </section>
+
+    <!-- ═══ DÍA CERO ═══ -->
+    <section class="view" id="v-diazero">
+      <div class="card" style="border-left:4px solid var(--wb-accent); margin-bottom:13px">
+        <h2>Así se ve el primer día — nada finge estar vivo</h2>
+        <div class="row"><span class="t"><b>1 · Conecta una fuente</b> (ERP, CRM, o una plantilla CSV de 10 minutos)</span><span class="chip acc">empieza aquí</span></div>
+        <div class="row"><span class="t"><b>2 · El agente audita lo conectado</b> — infiere lo que los datos ya dicen y pregunta SOLO los huecos (12–20 preguntas, no 82)</span><span class="chip mut">tras el paso 1</span></div>
+        <div class="row"><span class="t"><b>3 · Primeras señales en 48 h</b> — con regla visible y datos tuyos, no demo</span><span class="chip mut">tras el paso 2</span></div>
+      </div>
+      <div class="grid c3">
+        <div class="card"><h2>Señales</h2><div class="skel" style="width:80%"></div><div class="skel" style="width:60%"></div><p class="note mt" style="font-size:11.5px">Vacío honesto: "Sin fuentes conectadas no hay señales. Conecta la primera."</p></div>
+        <div class="card"><h2>Coherencia</h2><div class="skel" style="width:45%"></div><div class="skel" style="width:70%"></div><p class="note mt" style="font-size:11.5px">"Se calcula cuando exista una aspiración y al menos un choice."</p></div>
+        <div class="card"><h2>Equipo</h2><div class="skel" style="width:65%"></div><div class="skel" style="width:50%"></div><p class="note mt" style="font-size:11.5px">"Invita a tu equipo cuando quieras — el loop arranca contigo solo."</p></div>
+      </div>
+      <div class="spec"><b>Spec</b>Onboarding = el loop en miniatura: conectar→auditar→priorizar. El assessment inferido (huecos-solamente) es el corazón del wedge: auditar sin interrogar. Cada tarjeta vacía dice qué la llena — cero datos demo en producción.</div>
+    </section>
+
+    <div class="fict">Wireframe UX/UI — dummy de spec con datos 100% ficticios ("Molinos Delta"). Brand System Wadi Bardawil · BDS — Business Design Shop. Nada construido aún. i18n ES/EN: spec por diccionario de strings (sin toggle decorativo). Estado canónico compartido: docs/wireframes/state.json.</div>
   </main>
 </div>
 <button class="fab" id="fab" aria-label="Abrir advisor">✦</button>
@@ -473,10 +589,10 @@
   </header>
   <div class="msgs">
     <div class="msg u">¿Por qué bajó la coherencia esta semana?</div>
-    <div class="msg a">Bajó de 68 a 66 por dos hechos, no por opinión: <b>(1)</b> la capacidad de cadena de suministro retrocedió 2.8 → 2.5 — el OTIF lleva 3 semanas cayendo y coincide con la debilidad que el assessment de mayo ya marcaba en planeación de flota; <b>(2)</b> el supuesto de sobreprecio 12% sigue roto (evidencia: 5–7% en 6 clientes). No es deriva del score: es la realidad entrando al modelo.
-      <span class="src">Fuentes: metric_points (Odoo, 06:00) · assessment may-2026 P47 · evidencia supuesto S3 · challenge N3 abierto</span></div>
+    <div class="msg a">Bajó de 68 a 66 por dos hechos, no por opinión: <b>(1)</b> la madurez de cadena de suministro se movió 2.8 → 2.5 — y no se movió sola: el agente marcó 3 semanas de evidencia OTIF contra la práctica, propuso re-assessment, y Jorge lo respondió el jueves. El score solo se mueve con respuesta humana; el ERP aporta evidencia, nunca degrada la madurez por su cuenta. <b>(2)</b> el supuesto de sobreprecio 12% sigue roto (evidencia: 5–7% en 6 clientes).
+      <span class="src">Fuentes: metric_points (Odoo, 06:00) · re-assessment 17-jul respondido por Jorge · evidencia supuesto S3 · challenge N3 abierto</span></div>
     <div class="msg u">Prepárame el análisis de la renta de flota para la sesión</div>
-    <div class="msg a">Listo el borrador: comparativo renta ($18K/mes, recupera OTIF ≥95% en 3 sem) vs. tercerizar ruta pico vs. no actuar (proyección 81%). Incluye el impacto en caja cruzado con el DSO de 54 días — las dos señales compiten por la misma caja, lo puse explícito. <b>Está en tu bandeja para aprobar y anexar a la agenda.</b>
+    <div class="msg a">Listo el borrador: comparativo renta ($18K/mes cotizado; recupera OTIF a 92–97% en 3–5 sem <span class="est">estimación</span>) vs. tercerizar ruta pico vs. no actuar (proyección 79–84% <span class="est">estimación</span>). Cada cifra mía trae banda y supuestos anexos — las cotizadas son de Jorge, esas sí son duras. Incluye el impacto en caja cruzado con el DSO de 54 días. <b>Está en tu bandeja para aprobar y anexar a la agenda.</b>
       <span class="src">Usó: puente EBITDA · propuesta de Jorge (check-in) · política de crédito en borrador de Lucía</span>
       <span class="act"><button class="btn p" onclick="toast('Análisis aprobado → anexado a la agenda de las 9:00')">Aprobar y anexar</button></span></div>
   </div>
@@ -486,6 +602,12 @@
     <button onclick="toast('dummy')">Redacta el resumen para el consejo</button>
   </div>
   <div class="inp"><input placeholder="Pregunta, pide o delega — con voz o texto…" aria-label="Mensaje al advisor"><button class="btn p">▸</button></div>
+</aside>
+<button id="ovl" aria-label="Cerrar panel" onclick="closeDetail()"></button>
+<aside class="detail" id="detail" aria-label="Detalle de aprobación">
+  <header><b id="d-title"></b><button class="x" onclick="closeDetail()" aria-label="Cerrar">✕</button></header>
+  <div class="body" id="d-body"></div>
+  <div class="foot" id="d-foot"></div>
 </aside>
 <div id="toast" role="status"></div>
 
@@ -501,6 +623,62 @@
     personas:['personas · people al centro','Cada quien con sus números y su coach']
   };
   titles.estrategia = ['estrategia · play to win','La cascada: aspiración, choices, supuestos'];
+  titles.conectores = ['sistema · conectores & datos','6 de 7 sanos — y el caído se nota'];
+  titles.admin = ['sistema · organización & seats','Precio por empresa; frontline gratis'];
+  titles.diazero = ['sistema · día cero','El loop en miniatura: conectar, auditar, priorizar'];
+
+  // ── STATE canónico — única fuente de los números que se repiten entre piezas.
+  // Copia fiel de docs/wireframes/state.json; si un número cambia, cambia ALLÁ primero.
+  const STATE = { coherencia:66, coherenciaPrev:68, senales:3, metricas:47, challenge:'N3',
+    otif:87, dso:54, rotacion:19, wip:'5/5', checkins:'11/14', aprobaciones:3, conectores:'6/7' };
+
+  // ── Detalle de aprobaciones: qué hará el agente, con qué texto, con qué fuentes ──
+  const DETAILS = {
+    senal01: { t:'Señal 01 · Entrega', approvable:false, body:
+      '<h5>Regla que la disparó (determinista — sin LLM)</h5><div class="rule">OTIF &lt; 90% · 3 semanas consecutivas a la baja<br>Y ligada al supuesto S1 ("48h sostenible con flota propia")<br>→ señal, severidad crit</div>'+
+      '<h5>Causa raíz — hipótesis del agente, no veredicto</h5><div class="prev">"Disponibilidad de flota, no diseño de rutas" · <b>confianza 72%</b> — basada en el check-in de Jorge (14 jul) y la correlación con mantenimientos. El LLM solo redacta este párrafo; el disparo fue la regla de arriba.</div>'+
+      '<h5>Fuentes</h5><div class="prev">metric_points OTIF (Odoo, 06:00) · check-in Jorge sem 28 · assessment may-2026 P47</div>' },
+    challenge: { t:'Challenge N3 · capex de flota', ok:'Challenge aceptado — agendado 9:00', body:
+      '<h5>Qué aprobarías</h5><div class="prev">Abrir formalmente el challenge nivel 3 (modelo operativo): "el plan no contempla capex de flota y el how-to-win depende de ella". Entra como punto 1 de la sesión de hoy.</div>'+
+      '<h5>De dónde sale</h5><div class="prev">Señales 01+03 comparten causa raíz (hipótesis, confianza 72%). El Challenge Loop lo detectó como N2 (iniciativa); el CoS lo elevó a N3 con los otros dos vértices.</div>'+
+      '<h5>Si lo rechazas</h5><div class="prev">Queda registrado como "descartado por el CEO" con tu nota — y el agente no lo vuelve a proponer sin evidencia nueva.</div>' },
+    nudge: { t:'Nudge a Raúl · backup vencido', ok:'Nudge enviado a Raúl', body:
+      '<h5>Texto EXACTO que se enviará</h5><div class="prev">"Raúl — tu check-in trimestral de backup lleva 9 días vencido y es el único control de la práctica Security &amp; Compliance (madurez 1.5). ¿Lo agendamos esta semana? — Coach de Molinos Delta"</div>'+
+      '<h5>Canal</h5><div class="prev">WhatsApp (su canal preferido) · nunca se envía sin esta aprobación</div>' },
+    readout: { t:'Readout semanal → vault + Notion', ok:'Publicado al vault', body:
+      '<h5>Qué se publica</h5><div class="prev">published/readout-2026-07-20.md — minuta, 2 decisiones con racional, challenge N3 abierto, coherencia 66 (▾2, explicado). Destino: vault Obsidian del CEO + wiki Notion.</div>'+
+      '<h5>Quién lo verá</h5><div class="prev">Equipo directivo (6). Nada sale de la organización.</div>' }
+  };
+  document.getElementById('kpi-strip').innerHTML =
+    '<div class="card"><div class="num hot">'+STATE.senales+'</div><div class="lbl">señales esta semana (de '+STATE.metricas+' métricas)</div></div>'+
+    '<div class="card"><div class="num">'+STATE.coherencia+'</div><div class="lbl">coherencia estratégica · ▾'+(STATE.coherenciaPrev-STATE.coherencia)+' explicado</div></div>'+
+    '<div class="card"><div class="num">5<small>/5</small></div><div class="lbl">iniciativas WIP · 1 en riesgo</div></div>'+
+    '<div class="card"><div class="num">11<small>/14</small></div><div class="lbl">check-ins del equipo al día</div></div>';
+
+  let dCur = null;
+  function openDetail(id){
+    dCur = id; const d = DETAILS[id];
+    document.getElementById('d-title').textContent = d.t;
+    document.getElementById('d-body').innerHTML = d.body;
+    document.getElementById('d-foot').innerHTML = d.approvable === false
+      ? '<button class="btn g" onclick="closeDetail()">Cerrar</button>'
+      : '<button class="btn p" onclick="approve()">Aprobar</button><button class="btn g" onclick="closeDetail();toast(\'Rechazado — el agente registra tu criterio\')">Rechazar</button>';
+    document.getElementById('detail').classList.add('open');
+    document.getElementById('ovl').classList.add('open');
+  }
+  function closeDetail(){ document.getElementById('detail').classList.remove('open'); document.getElementById('ovl').classList.remove('open'); }
+  function approve(){
+    const d = DETAILS[dCur]; closeDetail();
+    toastUndo(d.ok + ' · ', () => toast('Deshecho — nada se ejecutó'));
+  }
+  function toastUndo(m, onUndo){
+    const t = document.getElementById('toast');
+    t.innerHTML = ''; t.append(m);
+    const b = document.createElement('button'); b.textContent = 'Deshacer (30s)';
+    b.onclick = () => { clearTimeout(tt); t.classList.remove('show'); onUndo(); };
+    t.appendChild(b); t.classList.add('show');
+    clearTimeout(tt); tt = setTimeout(()=>t.classList.remove('show'), 8000);
+  }
   const AREAS = {
     fin:{n:'Finanzas & unit economics', src:'· Odoo + bancos · Lucía R.', k:[['DSO','54d','neg','+9 vs estructura · SEÑAL 02'],['Margen bruto','31.8%','pos','+1.8 pts'],['Runway','2.8m','mid','vigilar con capex'],['Costo por unidad','$4.12','flat','en plan']],
       p:[['Cash Flow Management',70,80,'3.5→4.0'],['Unit Economics Tracking',60,80,'3.0→4.0'],['Financial Planning & Analysis',50,70,'2.5→3.5']],
@@ -574,17 +752,7 @@
   });
   // tema claro/oscuro
   document.getElementById('tog-theme').addEventListener('click', () => document.body.classList.toggle('light'));
-  // idioma ES/EN — el chrome del app via diccionario data-en; contenido completo se internacionaliza en el producto real
-  let en = false;
-  document.getElementById('tog-lang').addEventListener('click', function(){
-    en = !en;
-    this.textContent = en ? 'ES' : 'EN';
-    document.querySelectorAll('.lb').forEach(s => {
-      if (!s.dataset.es) s.dataset.es = s.textContent;
-      s.textContent = en ? (s.dataset.en || s.dataset.es) : s.dataset.es;
-    });
-    toast(en ? 'Chrome in English — full content i18n is spec\'d via string dictionary' : 'Interfaz en español');
-  });
+  // i18n ES/EN: es SPEC (diccionario de strings — los data-en del markup son el inventario), no un toggle decorativo.
   const chat = document.getElementById('chat');
   document.getElementById('fab').addEventListener('click', () => chat.classList.add('open'));
   document.getElementById('chat-x').addEventListener('click', () => chat.classList.remove('open'));

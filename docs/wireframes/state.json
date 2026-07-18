@@ -1,0 +1,14 @@
+{
+  "_": "Estado ficticio CANÓNICO compartido por todas las piezas de wireframe (Molinos Delta, S.A. — 100% inventado). Si un número cambia, cambia aquí primero y propaga. Auditoría finding #1: las piezas se contradecían (coherencia 68 vs 66, challenge N2 vs N3).",
+  "empresa": { "nombre": "Molinos Delta, S.A. de C.V.", "ventas_usd": "18M", "personas": 140, "semana": 29 },
+  "coherencia": { "actual": 66, "previa": 68, "regla": "solo baja con re-assessment respondido por humano o supuesto roto con evidencia — nunca por deriva del ERP" },
+  "senales": { "total": 3, "de_metricas": 47,
+    "s01": { "area": "ops", "metrica": "OTIF", "valor": "87%", "regla": "OTIF<90 · 3 sem a la baja · ligada supuesto S1", "causa_raiz": { "hipotesis": "disponibilidad de flota, no rutas", "confianza": 0.72 } },
+    "s02": { "area": "fin", "metrica": "DSO", "valor": "54d", "regla": "DSO>45 · 2 meses al alza" },
+    "s03": { "area": "people", "metrica": "rotación choferes", "valor": "31%", "regla": "rotación>25 · ligada supuesto S1" } },
+  "challenge": { "id": "N3", "nivel": 3, "titulo": "capex de flota no planeado", "origen": "loop detectó N2; CoS elevó a N3 con los 3 vértices" },
+  "aprobaciones_pendientes": 3,
+  "wip": "5/5", "checkins": "11/14", "conectores": "6/7 sanos (feed bancario caído, datos al 15 jul)",
+  "kpis": { "otif": "87%", "dso": "54d", "rotacion": "19%", "margen_bruto": "31.8%", "runway_meses": 2.8 },
+  "timeline": "la simulación del lunes ARRANCA en 68 (domingo) y cierra en 66 tras el re-assessment de Jorge — ese delta es la historia, no una contradicción"
+}
