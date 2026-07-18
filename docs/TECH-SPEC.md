@@ -100,11 +100,23 @@ organizations   (id, name, kind 'practice'|'company', stripe_customer_id, create
 memberships     (org_id, user_id /*clerk*/, role 'owner'|'consultant'|'executive'|'contributor'|'viewer')
 workspaces      (id, org_id, client_name, created_at, archived_at)
 
--- STRATEGY VERTEX (M1)
-aspirations         (id, workspace_id, statement, version, status 'active'|'challenged'|'superseded', challenged_at)
-strategic_choices   (id, workspace_id, aspiration_id NULL←loose-first, where_to_play, how_to_win, status, sort)
-assumptions         (id, workspace_id, choice_id NULL, category /*7 WWHTBT*/, statement,
+-- STRATEGY VERTEX (M1) — built in migration 0003 (Intermedio scope)
+possibilities       (id, workspace_id, short_name, aspiration_hypothesis, where_to_play, how_to_win,
+                     why_could_win, what_we_stop, biggest_unknown, why_might_fail,
+                     status 'proposed'|'shortlisted'|'selected'|'parked'|'killed', sort)
+aspirations         (id, workspace_id, statement, version, status 'active'|'challenged'|'superseded',
+                     source_possibility_id NULL←promotion provenance, challenged_at)
+strategic_choices   (id, workspace_id, aspiration_id NULL←loose-first, source_possibility_id NULL,
+                     where_to_play, how_to_win, status, sort)
+assumptions         (id, workspace_id, choice_id NULL, possibility_id NULL, category /*7 WWHTBT*/, statement,
                      status 'untested'|'testing'|'held'|'broken', owner_name, evidence_note)
+-- `possibilities` is the one structural object added beyond the original §2.3 sketch:
+-- P2W's core is comparing 2–4 rival ways to win before committing (a `selected`
+-- possibility is "promoted" into the committed aspiration + choices). DEFERRED to
+-- Phase 1–2 (dogfooded via the p2w-strategy-planning-lab tool until real use earns
+-- a migration): competitor-assumption records, barrier tests w/ pass/fail thresholds,
+-- the problem canvas, the Ruthless-Critic/output-status, and importance×confidence
+-- enrichment of assumptions.
 
 -- OPERATING MODEL VERTEX (M2)
 capabilities    (id, workspace_id, name, area, maturity_current, maturity_target, ceiling,

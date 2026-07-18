@@ -99,6 +99,19 @@ export const TEST_LEVELS = [
   { key: "DEFINITIVE", label: "Definitive", help: "High cost / slower — full in-market simulation." },
 ];
 
+// Possibility lifecycle (M1 schema): hold 2–4 rival ways to win, shortlist,
+// then promote the `selected` one into the committed cascade. Mirrored by the
+// possibilities.status CHECK in migration 0003 — keep the two in sync.
+export const POSSIBILITY_STATUS = [
+  "proposed",
+  "shortlisted",
+  "selected",
+  "parked",
+  "killed",
+] as const;
+
+export type PossibilityStatus = (typeof POSSIBILITY_STATUS)[number];
+
 export function computeConfidence(checklist: Record<string, boolean>, box: CascadeBox): number {
   const meta = CASCADE_META[box];
   if (!meta) return 0;

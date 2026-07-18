@@ -8,9 +8,11 @@ export {
   CASCADE_META,
   CASCADE_ORDER,
   computeConfidence,
+  POSSIBILITY_STATUS,
   RE_CATEGORIES,
   TEST_LEVELS,
   type CascadeBox,
+  type PossibilityStatus,
   type ReCategory,
 } from "./framework";
 
